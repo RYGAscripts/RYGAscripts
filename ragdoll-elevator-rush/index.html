@@ -4,23 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cram panicking ragdoll office workers into a creaky elevator. Push your luck, snap the cable, launch them into orbit.">
+<meta name="theme-color" content="#1a1536">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Ragdoll Elevator Rush</title>
 <style>
   :root {
     --page-bg: #1a1536;
-    --hint-fg: #d7d2ff;
     --msg-fg: #ffd23f;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --page-bg: #0d0a1f;
-      --hint-fg: #b9b2f0;
       --msg-fg: #ffd23f;
     }
   }
   :root[data-theme="dark"] {
     --page-bg: #0d0a1f;
-    --hint-fg: #b9b2f0;
     --msg-fg: #ffd23f;
   }
   html, body {
@@ -37,25 +38,24 @@
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
   }
-  #game { position: fixed; inset: 0; }
+  #game { position: fixed; inset: 0; background: var(--page-bg); }
   #game canvas { display: block; touch-action: none; }
+  /* Probe for the notch / home-indicator insets, read by the game's HUD layout */
+  #safe {
+    position: fixed; top: 0; left: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
   #msg {
     position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
     padding: 16px; text-align: center; color: var(--msg-fg);
     font: 700 20px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; pointer-events: none;
   }
-  #rotate-hint {
-    position: fixed; left: 16px; right: 16px; bottom: 16px; display: none; text-align: center;
-    color: var(--hint-fg); font: 600 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
-    pointer-events: none;
-  }
-  @media (orientation: portrait) { #rotate-hint { display: block; } }
 </style>
 </head>
 <body>
 <div id="game"></div>
 <div id="msg">Loading the elevator&hellip;</div>
-<div id="rotate-hint">Tip: turn your phone sideways for a bigger elevator.</div>
+<div id="safe"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
 <script>
 (function () {
@@ -71,7 +71,7 @@ if (!window.Phaser) {
 //  CONFIG: every tunable lives here
 // =====================================================================
 const CONFIG = {
-  width: 1280,
+  width: 1280,              // design size; the real game size follows the screen's shape
   height: 720,
   floorsPerRun: 5,          // rides per run; the last delivery is on floor floorsPerRun + 1
   workerCap: 12,            // max ragdolls alive at once (5 physics bodies each)
@@ -111,8 +111,18 @@ const CONFIG = {
     slabTop: 340,           // floor surface position inside a floor tile
     queueStartX: 880,
     queueGap: 10,
-    exitX: -70,
     maxSag: 6,
+  },
+
+  // Full-screen fitting: the canvas always matches the screen's shape (no black bars)
+  screen: {
+    portraitWidth: 720,     // game units across a portrait screen (smaller = bigger ragdolls)
+    maxSize: 2560,          // cap on either game dimension
+    portraitFocusX: 680,    // world x centered on portrait screens (car + front of the queue)
+    floorAtLandscape: 0.78, // where the elevator floor sits, as a fraction of screen height
+    floorAtPortrait: 0.64,
+    uiTargetRatio: 0.75,    // grow the HUD when one game unit is smaller than this many CSS px
+    uiMaxScale: 1.45,
   },
 
   weight: {
@@ -232,6 +242,10 @@ const CONFIG = {
   audio: { master: 0.8, music: 0.26, sfx: 0.9, tempoMin: 96, tempoMax: 160 },
 };
 
+// The world is designed around a 1280-wide stage with the shaft at x = 640. Building art
+// extends well past it so wide screens never see an edge.
+const WORLD = { cx: 640, tileX0: -640, tileW: 2560 };
+
 const TYPE_KEYS = ['intern', 'manager', 'boss'];
 const FACES = ['calm', 'worried', 'scream'];
 const CAT = { WORLD: 0x0001, DOOR: 0x0002, BODY: 0x0004, LIMB: 0x0008 };
@@ -301,6 +315,7 @@ function textStyle(size, color, extra) {
     stroke: CONFIG.colors.inkCss,
     strokeThickness: Math.max(3, Math.round(size / 7)),
     align: 'center',
+    resolution: 2,
   }, extra || {});
 }
 
@@ -329,6 +344,55 @@ function uprightStep(b, k) {
   const a = wrapAngle(b.angle);
   if (Math.abs(a) > 0.01) MBody.setAngle(b, b.angle - a * k);
   MBody.setAngularVelocity(b, angVel(b) * 0.5);
+}
+
+// =====================================================================
+//  Screen fitting: game size follows the screen's shape, HUD grows on phones
+// =====================================================================
+const gameEl = document.getElementById('game');
+const safeEl = document.getElementById('safe');
+
+// Landscape keeps 720 units of height (wider screens see more building), squarer
+// screens keep 1280 of width, and portrait keeps a narrower slice so ragdolls stay big.
+function computeGameSize() {
+  const S = CONFIG.screen;
+  const cssW = Math.max(1, gameEl.clientWidth || window.innerWidth);
+  const cssH = Math.max(1, gameEl.clientHeight || window.innerHeight);
+  const aspect = cssW / cssH;
+  let w, h;
+  if (aspect >= CONFIG.width / CONFIG.height) { h = CONFIG.height; w = h * aspect; }
+  else if (aspect >= 1) { w = CONFIG.width; h = w / aspect; }
+  else { w = S.portraitWidth; h = w / aspect; }
+  return { w: Math.round(Math.min(w, S.maxSize)), h: Math.round(Math.min(h, S.maxSize)) };
+}
+
+// Size, orientation, HUD scale, and notch insets (all in game units) for laying out a scene
+function screenInfo(scene) {
+  const w = scene.scale.width;
+  const h = scene.scale.height;
+  const k = w / Math.max(1, gameEl.clientWidth || w); // game units per CSS pixel
+  const inset = { t: 0, r: 0, b: 0, l: 0 };
+  try {
+    const cs = getComputedStyle(safeEl);
+    inset.t = (parseFloat(cs.paddingTop) || 0) * k;
+    inset.r = (parseFloat(cs.paddingRight) || 0) * k;
+    inset.b = (parseFloat(cs.paddingBottom) || 0) * k;
+    inset.l = (parseFloat(cs.paddingLeft) || 0) * k;
+  } catch (e) {
+    // no safe-area support: keep zero insets
+  }
+  const ui = clamp(CONFIG.screen.uiTargetRatio * k, 1, CONFIG.screen.uiMaxScale);
+  return { w, h, portrait: h > w, ui, inset };
+}
+
+function canFullscreen(scene) {
+  return scene.sys.game.device.fullscreen.available;
+}
+
+function toggleFullscreen(scene) {
+  Sound.unlock();
+  if (scene.scale.isFullscreen) scene.scale.stopFullscreen();
+  else scene.scale.startFullscreen();
 }
 
 // =====================================================================
@@ -922,14 +986,21 @@ function drawLegs(g, typeKey, t) {
   }
 }
 
+// Tile coordinates: tile x = world x - WORLD.tileX0, so the shaft stays at world x = 640.
 function drawFloorTile(g, W, H) {
   const L = CONFIG.layout;
   const C = CONFIG.colors;
-  const sL = L.carLeft - L.wall - 16;
-  const sR = L.carRight + L.wall + 16;
+  const OX = -WORLD.tileX0;
+  const sL = L.carLeft - L.wall - 16 + OX;
+  const sR = L.carRight + L.wall + 16 + OX;
   const slab = L.slabTop;
   const winTop = 70, winBot = 250;
-  const windows = [[40, 190], [250, 400], [890, 1040], [1100, 1250]];
+
+  // windows repeat outward from the shaft every 210 px
+  const windows = [];
+  for (let b = sL - 36; b - 150 >= 0; b -= 210) windows.push([b - 150, b]);
+  for (let a = sR + 46; a + 150 <= W; a += 210) windows.push([a, a + 150]);
+  windows.sort((p, q) => p[0] - q[0]);
 
   // walls with window gaps, left lobby then right lobby
   g.fillStyle(C.wall);
@@ -964,7 +1035,7 @@ function drawFloorTile(g, W, H) {
   g.fillRect(sR, 276, W - sR, 5);
   g.fillRect(0, slab - 10, sL, 10);
   g.fillRect(sR, slab - 10, W - sR, 10);
-  // window frames
+  // window frames and ceiling lights
   for (const [w0, w1] of windows) {
     g.lineStyle(8, C.windowFrame);
     g.strokeRect(w0, winTop, w1 - w0, winBot - winTop);
@@ -973,33 +1044,39 @@ function drawFloorTile(g, W, H) {
     g.lineBetween(w0, (winTop + winBot) / 2, w1, (winTop + winBot) / 2);
     g.fillStyle(0xffffff, 0.12);
     g.fillTriangle(w0 + 6, winTop + 6, w0 + 50, winTop + 6, w0 + 6, winTop + 60);
+    g.fillStyle(0xfff4c9);
+    g.fillRect(w0 + 15, 6, 120, 8);
   }
-  // ceiling lights
-  g.fillStyle(0xfff4c9);
-  g.fillRect(80, 6, 120, 8);
-  g.fillRect(260, 6, 120, 8);
-  g.fillRect(900, 6, 120, 8);
-  g.fillRect(1080, 6, 120, 8);
-  // wall clock (left) and water cooler (right)
-  g.fillStyle(0xffffff);
-  g.fillCircle(420 - 70, 38, 20);
-  g.lineStyle(4, C.ink);
-  g.strokeCircle(420 - 70, 38, 20);
-  g.lineBetween(350, 38, 350, 24);
-  g.lineBetween(350, 38, 360, 42);
-  g.fillStyle(0xdfe8f5);
-  g.fillRect(1236, slab - 70, 30, 60);
-  g.fillStyle(0x8fd4ff);
-  g.fillRoundedRect(1238, slab - 110, 26, 42, 8);
-  g.lineStyle(3, C.ink);
-  g.strokeRect(1236, slab - 70, 30, 60);
-  // potted plant near the exit
-  g.fillStyle(0xc0633b);
-  g.fillRect(24, slab - 44, 34, 34);
-  g.fillStyle(0x2f9e44);
-  g.fillEllipse(41, slab - 62, 50, 36);
-  g.fillEllipse(30, slab - 82, 22, 36);
-  g.fillEllipse(52, slab - 84, 22, 40);
+  // wall clocks, water coolers, and potted plants, repeating every 630 px
+  for (let k = 0; k < 3; k++) {
+    const cx = sL - 86 - k * 630;
+    if (cx > 30) {
+      g.fillStyle(0xffffff);
+      g.fillCircle(cx, 38, 20);
+      g.lineStyle(4, C.ink);
+      g.strokeCircle(cx, 38, 20);
+      g.lineBetween(cx, 38, cx, 24);
+      g.lineBetween(cx, 38, cx + 10, 42);
+    }
+    const wx = sR + 392 + k * 630;
+    if (wx + 30 < W) {
+      g.fillStyle(0xdfe8f5);
+      g.fillRect(wx, slab - 70, 30, 60);
+      g.fillStyle(0x8fd4ff);
+      g.fillRoundedRect(wx + 2, slab - 110, 26, 42, 8);
+      g.lineStyle(3, C.ink);
+      g.strokeRect(wx, slab - 70, 30, 60);
+    }
+    const px = sL - 412 - k * 630;
+    if (px > 0) {
+      g.fillStyle(0xc0633b);
+      g.fillRect(px, slab - 44, 34, 34);
+      g.fillStyle(0x2f9e44);
+      g.fillEllipse(px + 17, slab - 62, 50, 36);
+      g.fillEllipse(px + 6, slab - 82, 22, 36);
+      g.fillEllipse(px + 28, slab - 84, 22, 40);
+    }
+  }
   // shaft door frames
   g.fillStyle(0x9aa0b5);
   g.fillRect(sL - 14, slab - 262, 14, 262);
@@ -1031,7 +1108,8 @@ function drawFloorTile(g, W, H) {
 function drawRoof(g, W, H) {
   const C = CONFIG.colors;
   const L = CONFIG.layout;
-  const cx = (L.carLeft + L.carRight) / 2;
+  const OX = -WORLD.tileX0;
+  const cx = (L.carLeft + L.carRight) / 2 + OX;
   // slab and parapet
   g.fillStyle(C.slab);
   g.fillRect(0, H - 40, W, 40);
@@ -1051,20 +1129,22 @@ function drawRoof(g, W, H) {
   g.fillStyle(0x9aa0b5);
   g.fillCircle(cx, H - 120, 12);
   // water tower
+  const tx = 1025 + OX;
   g.fillStyle(0x8b5a2b);
-  g.fillRect(1040, H - 130, 8, 60);
-  g.fillRect(1110, H - 130, 8, 60);
+  g.fillRect(tx + 15, H - 130, 8, 60);
+  g.fillRect(tx + 85, H - 130, 8, 60);
   g.fillStyle(0xa86b3c);
-  g.fillRoundedRect(1025, H - 210, 110, 90, 12);
+  g.fillRoundedRect(tx, H - 210, 110, 90, 12);
   g.fillStyle(0x6b3f1d);
-  g.fillTriangle(1020, H - 205, 1140, H - 205, 1080, H - 245);
-  // antenna
+  g.fillTriangle(tx - 5, H - 205, tx + 115, H - 205, tx + 55, H - 245);
+  // antenna (its blinking light is a separate object at world x = 200)
+  const ax = 200 + OX;
   g.lineStyle(5, 0x4a4560);
-  g.lineBetween(200, H - 70, 200, 10);
-  g.lineBetween(200, 60, 180, H - 70);
-  g.lineBetween(200, 60, 220, H - 70);
+  g.lineBetween(ax, H - 70, ax, 10);
+  g.lineBetween(ax, 60, ax - 20, H - 70);
+  g.lineBetween(ax, 60, ax + 20, H - 70);
   g.fillStyle(0xff4757);
-  g.fillCircle(200, 10, 7);
+  g.fillCircle(ax, 10, 7);
 }
 
 function drawSkyline(g, W, H) {
@@ -1215,9 +1295,9 @@ function generateTextures(scene) {
   });
 
   // world art
-  makeTex(scene, 'floorTile', CONFIG.width, CONFIG.layout.floorHeight, drawFloorTile);
-  makeTex(scene, 'roof', CONFIG.width, 260, drawRoof);
-  makeTex(scene, 'skyline', CONFIG.width + 200, 300, drawSkyline);
+  makeTex(scene, 'floorTile', WORLD.tileW, CONFIG.layout.floorHeight, drawFloorTile);
+  makeTex(scene, 'roof', WORLD.tileW, 260, drawRoof);
+  makeTex(scene, 'skyline', 2600, 300, drawSkyline);
 
   // UI
   makeTex(scene, 'doorsBtn', 136, 136, (g) => {
@@ -1266,6 +1346,19 @@ function generateTextures(scene) {
     g.beginPath(); g.arc(30, 28, 9, -0.9, 0.9, false); g.strokePath();
     g.beginPath(); g.arc(30, 28, 15, -0.9, 0.9, false); g.strokePath();
   });
+  makeTex(scene, 'iconFull', 56, 56, (g) => {
+    g.fillStyle(C.ink); g.fillCircle(28, 30, 26);
+    g.fillStyle(0xffffff); g.fillCircle(28, 28, 24);
+    g.lineStyle(4, C.ink);
+    const corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+    for (const [sx, sy] of corners) {
+      g.beginPath();
+      g.moveTo(28 + sx * 13, 28 + sy * 5);
+      g.lineTo(28 + sx * 13, 28 + sy * 13);
+      g.lineTo(28 + sx * 5, 28 + sy * 13);
+      g.strokePath();
+    }
+  });
   makeTex(scene, 'iconMute', 56, 56, (g) => {
     g.fillStyle(C.ink); g.fillCircle(28, 30, 26);
     g.fillStyle(0xffffff); g.fillCircle(28, 28, 24);
@@ -1302,13 +1395,20 @@ function makeButton(scene, x, y, w, h, label, color, onClick, fontSize) {
   const bg = scene.add.image(x, y, key).setInteractive({ useHandCursor: true });
   const txt = scene.add.text(x, y - 3, label, textStyle(fontSize || Math.round(h * 0.38), '#ffffff')).setOrigin(0.5);
   let down = false;
-  bg.on('pointerdown', () => { down = true; bg.setScale(0.94); txt.setScale(0.94); Sound.unlock(); });
-  bg.on('pointerout', () => { down = false; bg.setScale(1); txt.setScale(1); });
+  let base = 1;
+  const press = (k) => { bg.setScale(base * k); txt.setScale(base * k); };
+  bg.on('pointerdown', () => { down = true; press(0.94); Sound.unlock(); });
+  bg.on('pointerout', () => { down = false; press(1); });
   bg.on('pointerup', () => {
-    bg.setScale(1); txt.setScale(1);
+    press(1);
     if (down) { down = false; Sound.pop(); onClick(); }
   });
-  return { bg, txt, setDepth(d) { bg.setDepth(d); txt.setDepth(d + 1); return this; } };
+  return {
+    bg,
+    txt,
+    setDepth(d) { bg.setDepth(d); txt.setDepth(d + 1); return this; },
+    setScale(k) { base = k; press(1); txt.y = bg.y - 3 * k; return this; },
+  };
 }
 
 // =====================================================================
@@ -1626,58 +1726,87 @@ class MenuScene extends Phaser.Scene {
   constructor() { super({ key: 'Menu', physics: MATTER_SCENE_CONFIG }); }
 
   create() {
-    const W = CONFIG.width, H = CONFIG.height;
+    const S = screenInfo(this);
+    const { w: W, h: H, ui, inset } = S;
+    const cx = W / 2;
+    this.S = S;
     this.acc = 0;
     this.rain = [];
+    this.shop = null;
+    this.restarting = false;
     this.cameras.main.setBackgroundColor(CONFIG.colors.skyStops[0][1]);
     Sound.setIntensity(0);
 
-    this.add.image(W / 2, H - 110, 'skyline').setOrigin(0.5, 1).setAlpha(0.9);
+    // vertical flow: title on top, hint at the bottom, buttons centered in between
+    const title1Y = inset.t + Math.max(96 * ui, H * 0.11, S.portrait ? 170 * ui : 0); // clear of the stats row
+    const title2Y = title1Y + 88 * ui;
+    const groundY = H - inset.b - 110 * ui;
+    const mid = (title2Y + 60 * ui + groundY) / 2;
+    const playY = mid - 45 * ui;
+    const shopY = playY + 120 * ui;
+
+    this.add.image(cx, groundY, 'skyline').setOrigin(0.5, 1).setAlpha(0.9).setScale(ui);
     const g = this.add.graphics();
     g.fillStyle(0x514b7a);
-    g.fillRect(0, H - 110, W, 110);
+    g.fillRect(0, groundY, W, H - groundY);
     g.fillStyle(0x3d3862);
-    g.fillRect(0, H - 110, W, 10);
+    g.fillRect(0, groundY, W, 10 * ui);
 
     // A tiny tower with an elevator going up and down behind the title
+    const towerTop = title2Y - 30 * ui;
     g.fillStyle(0x6c63a8);
-    g.fillRect(W / 2 - 120, 150, 240, H - 260);
+    g.fillRect(cx - 120 * ui, towerTop, 240 * ui, groundY - towerTop);
     g.fillStyle(0x2a2540);
-    g.fillRect(W / 2 - 22, 150, 44, H - 260);
+    g.fillRect(cx - 22 * ui, towerTop, 44 * ui, groundY - towerTop);
     g.fillStyle(0xfff0a8, 0.8);
-    for (let y = 170; y < H - 130; y += 40) {
-      for (const x of [W / 2 - 100, W / 2 - 64, W / 2 + 36, W / 2 + 72]) g.fillRect(x, y, 24, 22);
+    for (let y = towerTop + 20 * ui; y < groundY - 30 * ui; y += 40 * ui) {
+      for (const dx of [-100, -64, 36, 72]) g.fillRect(cx + dx * ui, y, 24 * ui, 22 * ui);
     }
-    const lift = this.add.rectangle(W / 2, H - 150, 36, 44, 0xffd23f).setStrokeStyle(4, CONFIG.colors.ink);
-    this.tweens.add({ targets: lift, y: 190, duration: 2600, ease: 'Sine.easeInOut', yoyo: true, repeat: -1, hold: 400, repeatDelay: 400 });
+    const lift = this.add.rectangle(cx, groundY - 40 * ui, 36 * ui, 44 * ui, 0xffd23f).setStrokeStyle(4 * ui, CONFIG.colors.ink);
+    this.tweens.add({ targets: lift, y: towerTop + 40 * ui, duration: 2600, ease: 'Sine.easeInOut', yoyo: true, repeat: -1, hold: 400, repeatDelay: 400 });
 
-    const title1 = this.add.text(W / 2, 96, 'RAGDOLL', textStyle(92, '#ffd23f', { strokeThickness: 14 })).setOrigin(0.5).setDepth(5);
-    const title2 = this.add.text(W / 2, 184, 'ELEVATOR RUSH', textStyle(64, '#ffffff', { strokeThickness: 12 })).setOrigin(0.5).setDepth(5);
+    const title1 = this.add.text(cx, title1Y, 'RAGDOLL', textStyle(92, '#ffd23f', { strokeThickness: 14 })).setOrigin(0.5).setDepth(5);
+    const title2 = this.add.text(cx, title2Y, 'ELEVATOR RUSH', textStyle(64, '#ffffff', { strokeThickness: 12 })).setOrigin(0.5).setDepth(5);
     title1.setShadow(6, 8, '#1d1b2e', 0, true, true);
     title2.setShadow(5, 7, '#1d1b2e', 0, true, true);
+    const s1 = Math.min(ui, (W - 40) / title1.width);
+    const s2 = Math.min(ui, (W - 60) / title2.width);
+    title1.setScale(s1);
+    title2.setScale(s2);
     this.tweens.add({ targets: title1, angle: { from: -2.5, to: 2.5 }, duration: 1300, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
-    this.tweens.add({ targets: title2, scale: { from: 1, to: 1.05 }, duration: 900, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
+    this.tweens.add({ targets: title2, scale: { from: s2, to: s2 * 1.05 }, duration: 900, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 
     // physics: ground, title shelf, and play button so ragdolls pile on them
     const statics = { isStatic: true, friction: 0.8, collisionFilter: { group: 0, category: CAT.WORLD, mask: 0xffff } };
-    this.matter.add.rectangle(W / 2, H - 80, W * 3, 60, statics);
-    this.matter.add.rectangle(W / 2, 228, 560, 16, statics);
-    this.matter.add.rectangle(W / 2, 400, 320, 90, statics);
+    this.matter.add.rectangle(cx, groundY + 30, W * 3, 60, statics);
+    this.matter.add.rectangle(cx, title2Y + 44 * s2, title2.width * s2 * 0.85, 16, statics);
+    this.matter.add.rectangle(cx, playY, 320 * ui, 90 * ui, statics);
 
-    this.playBtn = makeButton(this, W / 2, 400, 320, 100, 'PLAY', 0x2ecc71, () => this.startGame(), 46).setDepth(10);
-    this.shopBtn = makeButton(this, W / 2, 520, 240, 76, 'SHOP', 0x4ea8ff, () => this.openShop(), 32).setDepth(10);
+    this.playBtn = makeButton(this, cx, playY, 320, 100, 'PLAY', 0x2ecc71, () => this.startGame(), 46).setScale(ui).setDepth(10);
+    this.shopBtn = makeButton(this, cx, shopY, 240, 76, 'SHOP', 0x4ea8ff, () => this.openShop(), 32).setScale(ui).setDepth(10);
 
-    this.bestText = this.add.text(24, 20, '', textStyle(26, '#ffffff', { align: 'left' })).setDepth(10);
-    this.coinIcon = this.add.image(38, 84, 'coin').setDepth(10);
-    this.coinText = this.add.text(60, 68, '', textStyle(26, '#ffd23f', { align: 'left' })).setDepth(10);
+    const left = inset.l + 24 * ui;
+    const top = inset.t + 20 * ui;
+    this.bestText = this.add.text(left, top, '', textStyle(26, '#ffffff', { align: 'left' })).setScale(ui).setDepth(10);
+    this.coinIcon = this.add.image(left + 14 * ui, top + 64 * ui, 'coin').setScale(ui).setDepth(10);
+    this.coinText = this.add.text(left + 36 * ui, top + 48 * ui, '', textStyle(26, '#ffd23f', { align: 'left' })).setScale(ui).setDepth(10);
     this.refreshStats();
 
-    this.muteBtn = this.add.image(W - 44, 44, Save.data.muted ? 'iconMute' : 'iconSound').setInteractive({ useHandCursor: true }).setDepth(10);
+    const iconY = inset.t + 44 * ui;
+    this.muteBtn = this.add.image(W - inset.r - 44 * ui, iconY, Save.data.muted ? 'iconMute' : 'iconSound')
+      .setScale(ui).setInteractive({ useHandCursor: true }).setDepth(10);
     this.muteBtn.on('pointerup', () => this.toggleMute());
+    if (canFullscreen(this)) {
+      this.add.image(W - inset.r - 112 * ui, iconY, 'iconFull').setScale(ui).setInteractive({ useHandCursor: true }).setDepth(10)
+        .on('pointerup', () => toggleFullscreen(this));
+    }
 
-    this.add.text(W / 2, H - 42,
-      'Tap the big DOORS button to go  •  Hold it to wait  •  Drag workers around  •  Don\'t snap the cable!',
-      textStyle(18, '#ffffff', { fontFamily: UI_FONT, strokeThickness: 5 })).setOrigin(0.5).setDepth(10);
+    const hint = S.portrait
+      ? 'Tap DOORS to go  •  Hold it to wait\nDrag workers  •  Don\'t snap the cable!'
+      : 'Tap the big DOORS button to go  •  Hold it to wait  •  Drag workers around  •  Don\'t snap the cable!';
+    const hintText = this.add.text(cx, H - inset.b - 20 * ui, hint,
+      textStyle(18, '#ffffff', { fontFamily: UI_FONT, strokeThickness: 5, lineSpacing: 6 })).setOrigin(0.5, 1).setDepth(10);
+    hintText.setScale(Math.min(ui, (W - 32) / hintText.width));
 
     this.input.keyboard.addCapture('SPACE');
     this.input.keyboard.on('keydown-SPACE', () => { if (!this.shop) this.startGame(); });
@@ -1685,6 +1814,16 @@ class MenuScene extends Phaser.Scene {
 
     this.rainTimer = this.time.addEvent({ delay: 1100, loop: true, callback: () => this.spawnRain() });
     this.spawnRain();
+
+    // Rotating the phone rebuilds the menu for the new shape.
+    this.scale.on('resize', this.onResize, this);
+    this.events.once('shutdown', () => this.scale.off('resize', this.onResize, this));
+  }
+
+  onResize() {
+    if (this.restarting) return;
+    this.restarting = true;
+    this.scene.restart();
   }
 
   refreshStats() {
@@ -1706,7 +1845,7 @@ class MenuScene extends Phaser.Scene {
       old.fadeOut(300);
     }
     const key = TYPE_KEYS[weightedIndex([0.5, 0.3, 0.2])];
-    const w = new Worker(this, key, rand(120, CONFIG.width - 120), -40, { state: 'menu', face: 'scream' });
+    const w = new Worker(this, key, rand(60, this.S.w - 60), -40, { state: 'menu', face: 'scream' });
     w.setFloppy(true);
     for (const b of w.bodies) MBody.setAngularVelocity(b, rand(-0.2, 0.2));
     this.rain.push(w);
@@ -1724,7 +1863,7 @@ class MenuScene extends Phaser.Scene {
     if (n >= CONFIG.physics.maxStepsPerFrame) this.acc = 0;
     for (let i = this.rain.length - 1; i >= 0; i--) {
       const w = this.rain[i];
-      if (!w.alive || w.y > CONFIG.height + 200) { w.destroy(); this.rain.splice(i, 1); }
+      if (!w.alive || w.y > this.S.h + 200) { w.destroy(); this.rain.splice(i, 1); }
     }
   }
 
@@ -1733,39 +1872,53 @@ class MenuScene extends Phaser.Scene {
     this.scene.start('Game');
   }
 
-  // ---- shop overlay ----------------------------------------------------
+  // ---- shop overlay: 4 cards in a row on wide screens, a 2x2 grid on narrow ones ----
   openShop() {
     if (this.shop) return;
-    const W = CONFIG.width, H = CONFIG.height;
-    const items = [];
+    const { w: W, h: H, ui } = this.S;
+    const n = CONFIG.skins.length;
+    const cols = W >= 1100 ? 4 : 2;
+    const cardW = cols === 4 ? 210 : 300;
+    const cardH = 300;
+    const gapX = 30, gapY = 26;
+    const rows = Math.ceil(n / cols);
+    const gridW = cols * cardW + (cols - 1) * gapX;
+    const gridH = rows * cardH + (rows - 1) * gapY;
+    const panelW = gridW + 60;
+    const panelH = gridH + 280;
+    const top = -panelH / 2;
+
     const shade = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.6).setInteractive().setDepth(50);
-    const panel = this.add.graphics().setDepth(51);
-    panel.fillStyle(CONFIG.colors.ink); panel.fillRoundedRect(W / 2 - 520, 90, 1040, 540, 28);
-    panel.fillStyle(0x2d2850); panel.fillRoundedRect(W / 2 - 510, 100, 1020, 520, 24);
-    items.push(shade, panel);
-    items.push(this.add.text(W / 2, 150, 'ELEVATOR SKINS', textStyle(44, '#ffd23f')).setOrigin(0.5).setDepth(52));
-    const msg = this.add.text(W / 2, 540, '', textStyle(22, '#ffffff', { fontFamily: UI_FONT })).setOrigin(0.5).setDepth(52);
-    items.push(msg);
+    const box = this.add.container(W / 2, H / 2).setDepth(51)
+      .setScale(Math.min(ui, (W - 24) / panelW, (H - 24) / panelH));
+    const panel = this.add.graphics();
+    panel.fillStyle(CONFIG.colors.ink); panel.fillRoundedRect(-panelW / 2, top, panelW, panelH, 28);
+    panel.fillStyle(0x2d2850); panel.fillRoundedRect(-panelW / 2 + 10, top + 10, panelW - 20, panelH - 20, 24);
+    const title = this.add.text(0, top + 60, 'ELEVATOR SKINS', textStyle(44, '#ffd23f')).setOrigin(0.5);
+    const msg = this.add.text(0, top + 110 + gridH + 50, '', textStyle(22, '#ffffff', { fontFamily: UI_FONT, wordWrap: { width: panelW - 60 } })).setOrigin(0.5);
+    box.add([panel, title, msg]);
 
     const cards = [];
     const render = () => {
       for (const c of cards) c.forEach((o) => o.destroy());
       cards.length = 0;
       CONFIG.skins.forEach((skin, i) => {
-        const x = W / 2 - 360 + i * 240, y = 340;
+        const x = -gridW / 2 + cardW / 2 + (i % cols) * (cardW + gapX);
+        const y = top + 110 + cardH / 2 + Math.floor(i / cols) * (cardH + gapY);
         const owned = Save.data.owned.includes(skin.id);
         const equipped = Save.data.skin === skin.id;
-        const card = this.add.graphics().setDepth(52);
+        const card = this.add.graphics();
         card.fillStyle(equipped ? 0xffd23f : CONFIG.colors.ink);
-        card.fillRoundedRect(x - 105, y - 150, 210, 300, 18);
+        card.fillRoundedRect(x - cardW / 2, y - cardH / 2, cardW, cardH, 18);
         card.fillStyle(0x3f3970);
-        card.fillRoundedRect(x - 99, y - 144, 198, 288, 14);
-        const preview = this.add.image(x, y - 50, `carBack_${skin.id}`).setScale(0.44).setDepth(53);
-        const header = this.add.image(x, y - 50 - 58, `carHeader_${skin.id}`).setScale(0.44).setDepth(53);
-        const name = this.add.text(x, y + 40, skin.name, textStyle(24, '#ffffff')).setOrigin(0.5).setDepth(53);
+        card.fillRoundedRect(x - cardW / 2 + 6, y - cardH / 2 + 6, cardW - 12, cardH - 12, 14);
+        const preview = this.add.image(x, y - 50, `carBack_${skin.id}`).setScale(0.44);
+        const header = this.add.image(x, y - 50 - 58, `carHeader_${skin.id}`).setScale(0.44);
+        const name = this.add.text(x, y + 40, skin.name, textStyle(24, '#ffffff')).setOrigin(0.5);
         const label = equipped ? 'EQUIPPED' : owned ? 'EQUIP' : `${skin.price} COINS`;
-        const status = this.add.text(x, y + 92, label, textStyle(20, equipped ? '#ffd23f' : owned ? '#3ddc84' : '#ffffff')).setOrigin(0.5).setDepth(53);
-        const hit = this.add.zone(x, y, 210, 300).setInteractive({ useHandCursor: true }).setDepth(54);
+        const status = this.add.text(x, y + 92, label, textStyle(20, equipped ? '#ffd23f' : owned ? '#3ddc84' : '#ffffff')).setOrigin(0.5);
+        const hit = this.add.zone(x, y, cardW, cardH).setInteractive({ useHandCursor: true });
+        box.add([card, preview, header, name, status, hit]);
         hit.on('pointerup', () => {
           if (owned) {
             Save.data.skin = skin.id;
@@ -1794,16 +1947,15 @@ class MenuScene extends Phaser.Scene {
     };
     render();
 
-    const close = makeButton(this, W / 2, 594, 200, 64, 'CLOSE', 0xff4f81, () => {
+    const close = makeButton(this, 0, top + panelH - 60, 200, 64, 'CLOSE', 0xff4f81, () => {
       this.time.delayedCall(0, () => {
-        for (const c of cards) c.forEach((o) => o.destroy());
-        for (const o of items) o.destroy();
-        close.bg.destroy();
-        close.txt.destroy();
+        shade.destroy();
+        box.destroy();
         this.shop = null;
       });
-    }, 28).setDepth(55);
-    this.shop = { items, cards };
+    }, 28);
+    box.add([close.bg, close.txt]);
+    this.shop = { box, shade };
   }
 }
 
@@ -1853,6 +2005,7 @@ class GameScene extends Phaser.Scene {
     this.timeScale = 1;
     this.frame = 0;
     this.carCX = (L.carLeft + L.carRight) / 2;
+    this.skyShift = { v: 0 };
 
     this.cameras.main.setBackgroundColor(CONFIG.colors.skyStops[0][1]);
     this.createBackdrop();
@@ -1862,6 +2015,9 @@ class GameScene extends Phaser.Scene {
     this.createHUD();
     this.setupInput();
     this.setDoorsUI(false);
+    this.layout();
+    this.scale.on('resize', this.layout, this);
+    this.events.once('shutdown', () => this.scale.off('resize', this.layout, this));
 
     Sound.setIntensity(0);
     this.time.delayedCall(250, () => this.beginFloor());
@@ -1869,20 +2025,43 @@ class GameScene extends Phaser.Scene {
 
   // ---- world ------------------------------------------------------------
   createBackdrop() {
-    const W = CONFIG.width, H = CONFIG.height;
     this.stars = this.add.graphics().setScrollFactor(0).setDepth(0).setAlpha(0);
-    this.stars.fillStyle(0xffffff);
-    for (let i = 0; i < 120; i++) this.stars.fillCircle(rand(0, W), rand(0, H), rand(0.8, 2.2));
-    this.skyline = this.add.image(W / 2, CONFIG.layout.floorY - 10, 'skyline').setOrigin(0.5, 1).setScrollFactor(0.2).setDepth(1);
+    this.skyline = this.add.image(WORLD.cx, CONFIG.layout.floorY - 10, 'skyline').setOrigin(0.5, 1).setScrollFactor(0.2).setDepth(1);
     this.clouds = [];
-    for (let i = 0; i < 7; i++) {
-      this.clouds.push(this.add.image(rand(0, W), -rand(300, 2600), 'cloud').setDepth(2).setScale(rand(0.7, 1.4)).setAlpha(0.9));
+    for (let i = 0; i < 8; i++) {
+      this.clouds.push(this.add.image(WORLD.cx + rand(-1000, 1000), -rand(300, 2600), 'cloud').setDepth(2).setScale(rand(0.7, 1.4)).setAlpha(0.9));
     }
     this.speedLines = [];
-    for (let i = 0; i < 16; i++) {
-      this.speedLines.push(this.add.image(rand(0, W), rand(0, H), 'speedline').setScrollFactor(0).setDepth(60).setAlpha(0).setScale(1, rand(0.6, 1.6)));
+    for (let i = 0; i < 18; i++) {
+      this.speedLines.push(this.add.image(0, 0, 'speedline').setScrollFactor(0).setDepth(60).setAlpha(0).setScale(1, rand(0.6, 1.6)));
     }
   }
+
+  // Fit the camera, backdrop, and HUD to the screen (on create and on every resize/rotation)
+  layout() {
+    const S = screenInfo(this);
+    const L = CONFIG.layout;
+    const cam = this.cameras.main;
+    this.S = S;
+    cam.setSize(S.w, S.h);
+    this.focusX = S.portrait ? CONFIG.screen.portraitFocusX : WORLD.cx;
+    this.baseScrollX = Math.round(this.focusX - S.w / 2);
+    this.baseScrollY = Math.round(L.floorY - S.h * (S.portrait ? CONFIG.screen.floorAtPortrait : CONFIG.screen.floorAtLandscape));
+    if (!this.snapped) cam.setScroll(this.baseScrollX, this.baseScrollY);
+
+    // the parallax skyline sits behind the current floor's windows at the resting camera position
+    this.skylineX = WORLD.cx - 0.8 * this.baseScrollX;
+    this.skylineY = L.floorY - 10 - 0.8 * this.baseScrollY;
+
+    this.stars.clear();
+    this.stars.fillStyle(0xffffff);
+    for (let i = 0; i < 160; i++) this.stars.fillCircle(rand(0, S.w), rand(0, S.h), rand(0.8, 2.2));
+    for (const line of this.speedLines) line.setPosition(rand(0, S.w), rand(0, S.h));
+    this.layoutHUD();
+  }
+
+  viewLeft() { return this.baseScrollX; }
+  viewRight() { return this.baseScrollX + this.S.w; }
 
   buildBuilding() {
     const L = CONFIG.layout;
@@ -1891,25 +2070,25 @@ class GameScene extends Phaser.Scene {
     if (this.building) this.building.destroy();
     this.building = this.add.container(0, 0).setDepth(5);
     const top = CONFIG.floorsPerRun + 1 - this.floor; // floors above the current one
-    for (let i = -1; i <= top; i++) {
+    for (let i = -3; i <= top; i++) { // three floors below so tall screens never see past the building
       const floorNo = this.floor + i;
       const y = L.floorY - L.slabTop - i * H;
-      this.building.add(this.add.image(CONFIG.width / 2, y, 'floorTile').setOrigin(0.5, 0));
+      this.building.add(this.add.image(WORLD.cx, y, 'floorTile').setOrigin(0.5, 0));
       if (floorNo >= 1) {
         const name = CONFIG.floorNames[floorNo - 1] || `LEVEL ${floorNo}`;
-        const sign = this.add.text(1000, y + 18, `${floorNo}F  ${name}`, {
+        const sign = this.add.text(960, y + 18, `${floorNo}F  ${name}`, {
           fontFamily: FONT, fontSize: '18px', color: '#ffffff', backgroundColor: '#2f6f4f', padding: { x: 10, y: 4 },
         }).setOrigin(0.5, 0);
         this.building.add(sign);
       }
     }
     const roofBottom = L.floorY - L.slabTop - top * H; // top edge of the highest floor
-    this.roof = this.add.image(CONFIG.width / 2, roofBottom, 'roof').setOrigin(0.5, 1);
+    this.roof = this.add.image(WORLD.cx, roofBottom, 'roof').setOrigin(0.5, 1);
     this.building.add(this.roof);
     this.roofLight = this.add.circle(200, roofBottom - 250, 9, 0xff4757);
     this.building.add(this.roofLight);
     this.tweens.add({ targets: this.roofLight, alpha: 0.15, duration: 600, yoyo: true, repeat: -1 });
-    this.building.add(this.add.text(215, L.floorY - 70, 'EXIT', {
+    this.building.add(this.add.text(360, L.floorY - 70, 'EXIT', {
       fontFamily: FONT, fontSize: '18px', color: '#ffffff', backgroundColor: '#1f9d55', padding: { x: 8, y: 3 },
     }).setOrigin(0.5, 0));
     this.pulleyY = roofBottom - 120;
@@ -1948,8 +2127,8 @@ class GameScene extends Phaser.Scene {
     const world = { isStatic: true, friction: 0.9, collisionFilter: { group: 0, category: CAT.WORLD, mask: 0xffff } };
     const door = { isStatic: true, friction: 0.3, collisionFilter: { group: 0, category: CAT.DOOR, mask: CAT.BODY } };
     const add = this.matter.add;
-    this.groundL = add.rectangle((L.carLeft - T - 600) / 2, L.floorY + 30, L.carLeft - T + 600, 60, world);
-    this.groundR = add.rectangle((L.carRight + T + 2400) / 2, L.floorY + 30, 2400 - L.carRight - T, 60, world);
+    this.groundL = add.rectangle((L.carLeft - T - 1600) / 2, L.floorY + 30, L.carLeft - T + 1600, 60, world);
+    this.groundR = add.rectangle((L.carRight + T + 3400) / 2, L.floorY + 30, 3400 - L.carRight - T, 60, world);
     this.carFloor = add.rectangle(this.carCX, L.floorY + 30, w + T * 2, 60, Object.assign({}, world, { chamfer: { radius: 4 } }));
     this.ceiling = add.rectangle(this.carCX, L.carTop - 20, w + T * 2, 40, world);
     this.doorBodyL = add.rectangle(L.carLeft - T / 2, L.carTop + h / 2, T, h, door);
@@ -2027,22 +2206,19 @@ class GameScene extends Phaser.Scene {
 
   // ---- HUD ----------------------------------------------------------------
   createHUD() {
-    const W = CONFIG.width, H = CONFIG.height;
     const hud = (o, d) => o.setScrollFactor(0).setDepth(d || 100);
-    this.scoreText = hud(this.add.text(24, 16, 'SCORE 0', textStyle(32, '#ffffff', { align: 'left' })));
-    this.floorText = hud(this.add.text(24, 60, '', textStyle(22, '#ffd23f', { align: 'left' })));
+    this.scoreText = hud(this.add.text(0, 0, 'SCORE 0', textStyle(32, '#ffffff', { align: 'left' })));
+    this.floorText = hud(this.add.text(0, 0, '', textStyle(22, '#ffd23f', { align: 'left' })));
 
-    const gx = W / 2, gy = 126;
     this.gaugeGroup = [
-      hud(this.add.image(gx, gy - 56, 'gaugeFace')),
-      hud(this.add.image(gx, gy, 'needle').setOrigin(0.5, 0.92), 101),
+      hud(this.add.image(0, 0, 'gaugeFace')),
+      hud(this.add.image(0, 0, 'needle').setOrigin(0.5, 0.92), 101),
+      hud(this.add.text(0, 0, 'LOAD 0/10', textStyle(22, '#ffffff')).setOrigin(0.5, 0)),
+      hud(this.add.text(0, 0, 'SNAP RISK 0%', textStyle(18, '#3ddc84')).setOrigin(0.5, 0)),
     ];
-    this.needle = this.gaugeGroup[1];
-    this.loadText = hud(this.add.text(gx, gy + 20, 'LOAD 0/10', textStyle(22, '#ffffff')).setOrigin(0.5, 0));
-    this.riskText = hud(this.add.text(gx, gy + 48, 'SNAP RISK 0%', textStyle(18, '#3ddc84')).setOrigin(0.5, 0));
-    this.gaugeGroup.push(this.loadText, this.riskText);
+    [, this.needle, this.loadText, this.riskText] = this.gaugeGroup;
 
-    this.muteBtn = hud(this.add.image(W - 44, 44, Save.data.muted ? 'iconMute' : 'iconSound').setInteractive({ useHandCursor: true }), 105);
+    this.muteBtn = hud(this.add.image(0, 0, Save.data.muted ? 'iconMute' : 'iconSound').setInteractive({ useHandCursor: true }), 105);
     this.muteBtn.on('pointerup', () => {
       Sound.unlock();
       Save.data.muted = !Save.data.muted;
@@ -2050,19 +2226,23 @@ class GameScene extends Phaser.Scene {
       Save.write();
       this.muteBtn.setTexture(Save.data.muted ? 'iconMute' : 'iconSound');
     });
+    this.fullBtn = null;
+    if (canFullscreen(this)) {
+      this.fullBtn = hud(this.add.image(0, 0, 'iconFull').setInteractive({ useHandCursor: true }), 105);
+      this.fullBtn.on('pointerup', () => toggleFullscreen(this));
+    }
 
     // DOORS button: tap = close and go, hold = keep doors open
-    const bx = W - 110, by = H - 96;
     this.doorsRing = hud(this.add.graphics(), 102);
-    this.doorsBtn = hud(this.add.image(bx, by, 'doorsBtn').setInteractive({ useHandCursor: true }), 103);
-    this.doorsLabel = hud(this.add.text(bx, by + 56, 'DOORS', textStyle(22, '#ffffff')).setOrigin(0.5, 0), 104);
-    this.doorsHint = hud(this.add.text(bx - 170, by + 34, 'TAP = GO\nHOLD = WAIT', textStyle(15, '#ffffff', { fontFamily: UI_FONT, strokeThickness: 4 })).setOrigin(0.5), 104);
+    this.doorsBtn = hud(this.add.image(0, 0, 'doorsBtn').setInteractive({ useHandCursor: true }), 103);
+    this.doorsLabel = hud(this.add.text(0, 0, 'DOORS', textStyle(22, '#ffffff')).setOrigin(0.5, 0), 104);
+    this.doorsHint = hud(this.add.text(0, 0, 'TAP = GO\nHOLD = WAIT', textStyle(15, '#ffffff', { fontFamily: UI_FONT, strokeThickness: 4 })).setOrigin(0.5), 104);
     this.doorsBtn.on('pointerdown', (pointer) => this.pressDoors(pointer.id));
     this.doorsUI = [this.doorsRing, this.doorsBtn, this.doorsLabel, this.doorsHint];
 
-    this.banner = hud(this.add.text(W / 2, H / 2 - 40, '', textStyle(56, '#ffd23f', { strokeThickness: 10 })).setOrigin(0.5).setAlpha(0), 110);
-    this.subBanner = hud(this.add.text(W / 2, H / 2 + 20, '', textStyle(28, '#ffffff')).setOrigin(0.5).setAlpha(0), 110);
-    this.altText = hud(this.add.text(W / 2, 70, '', textStyle(44, '#ffffff', { strokeThickness: 9 })).setOrigin(0.5).setVisible(false), 110);
+    this.banner = hud(this.add.text(0, 0, '', textStyle(56, '#ffd23f', { strokeThickness: 10 })).setOrigin(0.5).setAlpha(0), 110);
+    this.subBanner = hud(this.add.text(0, 0, '', textStyle(28, '#ffffff')).setOrigin(0.5).setAlpha(0), 110);
+    this.altText = hud(this.add.text(0, 0, '', textStyle(44, '#ffffff', { strokeThickness: 9 })).setOrigin(0.5).setVisible(false), 110);
 
     this.patienceGfx = this.add.graphics().setDepth(40);
 
@@ -2074,20 +2254,65 @@ class GameScene extends Phaser.Scene {
     this.popupIndex = 0;
   }
 
+  // Anchor the HUD to the screen edges (clear of notches); bigger on phones
+  layoutHUD() {
+    const { w, h, ui, inset, portrait } = this.S;
+    const left = inset.l + 24 * ui;
+    const top = inset.t + 16 * ui;
+    this.scoreText.setPosition(left, top).setScale(ui);
+    this.floorText.setPosition(left, top + 44 * ui).setScale(ui);
+    const iconY = inset.t + 44 * ui;
+    this.muteBtn.setPosition(w - inset.r - 44 * ui, iconY).setScale(ui);
+    if (this.fullBtn) this.fullBtn.setPosition(w - inset.r - 112 * ui, iconY).setScale(ui);
+
+    // load gauge: top center, below the score row on portrait screens
+    const g = portrait ? ui : Math.min(ui, 1.15);
+    const gx = w / 2;
+    const gy = inset.t + (portrait ? 116 * ui : 0) + 126 * g;
+    const [face, needle, load, risk] = this.gaugeGroup;
+    face.setPosition(gx, gy - 56 * g).setScale(g);
+    needle.setPosition(gx, gy).setScale(g);
+    load.setPosition(gx, gy + 20 * g).setScale(g);
+    risk.setPosition(gx, gy + 48 * g).setScale(g);
+
+    // DOORS: bottom right on landscape, bottom center (thumb reach) on portrait
+    const bx = portrait ? w / 2 : w - inset.r - 110 * ui;
+    const by = h - inset.b - (portrait ? 130 : 96) * ui;
+    this.doorsPos = { x: bx, y: by - 4 * ui, r: 72 * ui, s: ui };
+    this.doorsBtn.setPosition(bx, by).setScale(this.doorsPress ? 0.92 * ui : ui);
+    this.doorsLabel.setPosition(bx, by + 56 * ui).setScale(ui);
+    if (portrait) this.doorsHint.setPosition(bx, by - 112 * ui);
+    else this.doorsHint.setPosition(bx - 170 * ui, by + 34 * ui);
+    this.doorsHint.setScale(ui);
+
+    this.banner.setPosition(w / 2, h * (portrait ? 0.36 : 0.5) - 40 * ui);
+    this.subBanner.setPosition(w / 2, this.banner.y + 62 * ui);
+    this.altText.setPosition(w / 2, inset.t + (portrait ? 150 : 70) * ui).setScale(ui);
+  }
+
+  // Largest scale (up to the HUD scale) at which a text fits across the screen
+  fitScale(text) {
+    return Math.min(this.S.ui, (this.S.w - 40) / Math.max(1, text.width));
+  }
+
   popup(x, y, str, color, size) {
     const t = this.popups[this.popupIndex];
     this.popupIndex = (this.popupIndex + 1) % this.popups.length;
     this.tweens.killTweensOf(t);
-    t.setText(str).setColor(color || '#ffffff').setFontSize((size || 26) + 'px').setPosition(x, y).setAlpha(1).setScale(0.6).setVisible(true);
-    this.tweens.add({ targets: t, scale: 1, duration: 140, ease: 'Back.easeOut' });
+    const u = this.S.ui;
+    t.setText(str).setColor(color || '#ffffff').setFontSize((size || 26) + 'px').setPosition(x, y).setAlpha(1).setScale(0.6 * u).setVisible(true);
+    this.tweens.add({ targets: t, scale: u, duration: 140, ease: 'Back.easeOut' });
     this.tweens.add({ targets: t, y: y - 60, alpha: 0, delay: 350, duration: 700, ease: 'Sine.easeIn', onComplete: () => t.setVisible(false) });
   }
 
   showBanner(main, sub, color, ms) {
     this.tweens.killTweensOf([this.banner, this.subBanner]);
-    this.banner.setText(main).setColor(color || '#ffd23f').setAlpha(1).setScale(0.3);
-    this.subBanner.setText(sub || '').setAlpha(sub ? 1 : 0).setScale(1);
-    this.tweens.add({ targets: this.banner, scale: 1, duration: 320, ease: 'Back.easeOut' });
+    this.banner.setText(main).setColor(color || '#ffd23f').setAlpha(1);
+    this.subBanner.setText(sub || '').setAlpha(sub ? 1 : 0);
+    const bs = this.fitScale(this.banner);
+    this.banner.setScale(0.3 * bs);
+    this.subBanner.setScale(this.fitScale(this.subBanner));
+    this.tweens.add({ targets: this.banner, scale: bs, duration: 320, ease: 'Back.easeOut' });
     this.tweens.add({ targets: [this.banner, this.subBanner], alpha: 0, delay: ms || 1200, duration: 350 });
   }
 
@@ -2112,12 +2337,12 @@ class GameScene extends Phaser.Scene {
     g.clear();
     if (this.state === 'load') {
       const frac = clamp(this.loadTimer / CONFIG.timing.loadMs, 0, 1);
-      const bx = CONFIG.width - 110, by = CONFIG.height - 96 - 4;
-      g.lineStyle(10, CONFIG.colors.ink, 0.6);
-      g.strokeCircle(bx, by, 72);
-      g.lineStyle(8, this.holding ? 0x4ea8ff : frac < 0.3 ? CONFIG.colors.red : 0xffffff);
+      const { x: bx, y: by, r, s } = this.doorsPos;
+      g.lineStyle(10 * s, CONFIG.colors.ink, 0.6);
+      g.strokeCircle(bx, by, r);
+      g.lineStyle(8 * s, this.holding ? 0x4ea8ff : frac < 0.3 ? CONFIG.colors.red : 0xffffff);
       g.beginPath();
-      g.arc(bx, by, 72, -Math.PI / 2, -Math.PI / 2 + TAU * frac, false);
+      g.arc(bx, by, r, -Math.PI / 2, -Math.PI / 2 + TAU * frac, false);
       g.strokePath();
       this.doorsBtn.setTint(this.holding ? 0x9fd3ff : 0xffffff);
       this.doorsLabel.setText(this.holding ? 'HOLDING' : 'DOORS');
@@ -2159,13 +2384,13 @@ class GameScene extends Phaser.Scene {
     Sound.unlock();
     if (this.state !== 'load' || this.doorsPress) return;
     this.doorsPress = { id, t: this.time.now };
-    this.doorsBtn.setScale(0.92);
+    this.doorsBtn.setScale(0.92 * this.doorsPos.s);
   }
 
   releaseDoors() {
     const p = this.doorsPress;
     this.doorsPress = null;
-    this.doorsBtn.setScale(1);
+    this.doorsBtn.setScale(this.doorsPos.s);
     const wasHolding = this.holding;
     this.holding = false;
     if (!p || this.state !== 'load') return;
@@ -2184,8 +2409,9 @@ class GameScene extends Phaser.Scene {
       const b = hits[hits.length - 1];
       return { worker: this.workers.find((w) => w.bodies.includes(b)), body: b };
     }
-    // fat-finger fallback for phones: nearest torso within 46 px
-    let best = null, bestD = 46 * 46;
+    // fat-finger fallback for phones: nearest torso within reach
+    const reach = 46 * this.S.ui;
+    let best = null, bestD = reach * reach;
     for (const w of this.workers) {
       if (!w.alive || w.launched) continue;
       const dx = w.x - x, dy = w.y - y, d = dx * dx + dy * dy;
@@ -2294,7 +2520,7 @@ class GameScene extends Phaser.Scene {
       } else if (w.x > L.carLeft - 90) {
         pending++; // still close to the door
       }
-      if (w.x < L.exitX) w.destroy();
+      if (w.x < this.viewLeft() - 60) w.destroy();
     }
     if (this.deliverT > CONFIG.timing.deliverMaxMs) {
       // Stragglers are helped out with a puff of smoke.
@@ -2338,7 +2564,7 @@ class GameScene extends Phaser.Scene {
     const alive = this.workers.filter((w) => w.alive).length;
     const n = Math.min(randInt(Q.min, Q.max), CONFIG.workerCap - alive);
     const mix = CONFIG.spawnMix[Math.min(this.floor - 1, CONFIG.spawnMix.length - 1)];
-    let x = CONFIG.width + 30; // everyone runs in from just off screen
+    let x = this.viewRight() + 30; // everyone runs in from just off screen
     for (let i = 0; i < n; i++) {
       const key = TYPE_KEYS[weightedIndex(mix)];
       const w = new Worker(this, key, x + rand(0, 30), L.floorY - 2, { state: 'queue' });
@@ -2371,7 +2597,7 @@ class GameScene extends Phaser.Scene {
     if (this.boardClock <= 0) {
       let front = null;
       for (const w of this.workers) {
-        if (w.alive && w.state === 'queue' && w.x < CONFIG.width - 10 && (!front || w.x < front.x)) front = w;
+        if (w.alive && w.state === 'queue' && w.x < this.viewRight() - 10 && (!front || w.x < front.x)) front = w;
       }
       if (front) {
         front.targetX = rand(L.carLeft + 36, this.carCX + 20);
@@ -2426,7 +2652,7 @@ class GameScene extends Phaser.Scene {
     this.state = 'closing';
     this.holding = false;
     this.doorsPress = null;
-    this.doorsBtn.setScale(1).clearTint();
+    this.doorsBtn.setScale(this.doorsPos.s).clearTint();
     this.setDoorsUI(false);
     this.closeWeight = this.weight;
     let leftBehind = 0;
@@ -2463,7 +2689,7 @@ class GameScene extends Phaser.Scene {
     this.arrow.setAlpha(1);
     this.arrowTween = this.tweens.add({ targets: this.arrow, alpha: 0.2, duration: 250, yoyo: true, repeat: -1 });
     this.rideTween = this.tweens.add({ targets: this.building, y: L.floorHeight, duration: CONFIG.timing.rideMs, ease: 'Sine.easeInOut' });
-    this.tweens.add({ targets: this.skyline, y: this.skyline.y + L.floorHeight * 0.1, duration: CONFIG.timing.rideMs, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: this.skyShift, v: this.skyShift.v + L.floorHeight * 0.1, duration: CONFIG.timing.rideMs, ease: 'Sine.easeInOut' });
     this.indicatorSwitched = false;
   }
 
@@ -2503,8 +2729,8 @@ class GameScene extends Phaser.Scene {
     const bonus = CONFIG.score.completeBonus;
     this.setScore(this.score + bonus);
     this.showBanner('SHIFT COMPLETE!', `+${bonus} survival bonus`, '#3ddc84', 1600);
-    this.fx.confetti.explode(80, CONFIG.width / 2, 200);
-    this.fx.paper.explode(20, CONFIG.width / 2, 260);
+    this.fx.confetti.explode(80, WORLD.cx, 200);
+    this.fx.paper.explode(20, WORLD.cx, 260);
     Sound.fanfare();
     this.time.delayedCall(CONFIG.timing.completeMs, () => this.endRun(false));
   }
@@ -2562,7 +2788,7 @@ class GameScene extends Phaser.Scene {
     this.matter.world.setGravity(0, CONFIG.physics.gravityY);
     const h = L.floorY - L.carTop;
     this.launchRefY = L.carTop;
-    this.camTargetY = 0;
+    this.camTargetY = this.baseScrollY;
     this.launchedCount = 0;
     for (const w of this.workers) {
       if (!w.alive) continue;
@@ -2597,7 +2823,7 @@ class GameScene extends Phaser.Scene {
 
   updateFlight(dt) {
     this.flightT += dt;
-    const W = CONFIG.width;
+    const { w: W, h: H } = this.S;
     const cam = this.cameras.main;
 
     // the car falls away (in world time, so it respects slow motion)
@@ -2622,16 +2848,16 @@ class GameScene extends Phaser.Scene {
 
     // camera follows (and leads) the highest worker upward, never back down
     const lvy = velY(leader.torso.body);
-    this.camTargetY = Math.min(this.camTargetY, leader.y - 300 + Math.min(0, lvy) * 6);
+    this.camTargetY = Math.min(this.camTargetY, leader.y - H * 0.42 + Math.min(0, lvy) * 6);
     const follow = 1 - Math.pow(0.8, dt / 16.7); // frame-rate independent smoothing
     cam.scrollY += (this.camTargetY - cam.scrollY) * follow;
-    cam.scrollX += (clamp(leader.x - W / 2, -380, 380) - cam.scrollX) * follow * 0.3;
+    cam.scrollX += (this.baseScrollX + clamp(leader.x - this.focusX, -380, 380) - cam.scrollX) * follow * 0.3;
 
-    const camAlt = Math.max(0, -cam.scrollY / CONFIG.pxPerMeter);
+    const camAlt = Math.max(0, (this.baseScrollY - cam.scrollY) / CONFIG.pxPerMeter);
     cam.setBackgroundColor(skyColorAt(camAlt));
     this.stars.setAlpha(clamp((camAlt - 180) / 220, 0, 1));
     for (const c of this.clouds) {
-      if (c.y > cam.scrollY + CONFIG.height + 120) {
+      if (c.y > cam.scrollY + H + 120) {
         c.y = cam.scrollY - rand(80, 900);
         c.x = cam.scrollX + rand(-100, W + 100);
       }
@@ -2642,7 +2868,7 @@ class GameScene extends Phaser.Scene {
     for (const s of this.speedLines) {
       s.setAlpha(speedA);
       s.y += (8 + -lvy * 1.4) * (dt / 16.7);
-      if (s.y > CONFIG.height + 80) { s.y = -80; s.x = rand(0, W); }
+      if (s.y > H + 80) { s.y = -80; s.x = rand(0, W); }
     }
 
     // trails and flying coffee
@@ -2667,11 +2893,14 @@ class GameScene extends Phaser.Scene {
     this.flightBonus = meters * CONFIG.score.pointsPerMeter;
     this.setScore(this.score + this.flightBonus);
     this.tweens.killTweensOf([this.banner, this.subBanner]);
-    this.banner.setText(`FLIGHT DISTANCE: ${meters} m`).setColor('#ffd23f').setAlpha(1).setScale(2.4);
+    this.banner.setText(`FLIGHT DISTANCE: ${meters} m`).setColor('#ffd23f').setAlpha(1);
     this.subBanner.setText(`${this.launchedCount} coworker${this.launchedCount === 1 ? '' : 's'} launched  •  +${this.flightBonus} points`).setAlpha(1);
-    this.tweens.add({ targets: this.banner, scale: 1, duration: 420, ease: 'Bounce.easeOut' });
+    const bs = this.fitScale(this.banner);
+    this.banner.setScale(2.4 * bs);
+    this.subBanner.setScale(this.fitScale(this.subBanner));
+    this.tweens.add({ targets: this.banner, scale: bs, duration: 420, ease: 'Bounce.easeOut' });
     this.cameras.main.shake(250, 0.01);
-    this.fx.confetti.explode(60, this.cameras.main.scrollX + CONFIG.width / 2, this.cameras.main.scrollY + 120);
+    this.fx.confetti.explode(60, this.cameras.main.scrollX + this.S.w / 2, this.cameras.main.scrollY + 120);
     Sound.fanfare();
     this.time.delayedCall(CONFIG.timing.resultMs, () => this.endRun(true));
   }
@@ -2739,6 +2968,7 @@ class GameScene extends Phaser.Scene {
       default: break;
     }
 
+    this.skyline.setPosition(this.skylineX, this.skylineY + this.skyShift.v);
     if (!this.snapped) this.updateTension(dt);
     this.updateFaces(dt);
     this.cleanupWorkers();
@@ -2865,13 +3095,15 @@ class GameScene extends Phaser.Scene {
     g.clear();
     if (this.state !== 'load') return;
     for (const w of this.workers) {
-      if (!w.alive || w.state !== 'queue' || w.x > CONFIG.width) continue;
+      if (!w.alive || w.state !== 'queue' || w.x > this.viewRight()) continue;
       const f = clamp(w.patience / w.patienceMax, 0, 1);
-      const bx = w.head.x - 20, by = w.head.y - w.type.headR - 16;
+      const u = this.S.ui;
+      const bw = 40 * u, bh = 6 * u;
+      const bx = w.head.x - bw / 2, by = w.head.y - w.type.headR - 10 - bh;
       g.fillStyle(CONFIG.colors.ink, 0.85);
-      g.fillRect(bx - 2, by - 2, 44, 10);
+      g.fillRect(bx - 2, by - 2, bw + 4, bh + 4);
       g.fillStyle(f > 0.5 ? CONFIG.colors.green : f > 0.25 ? CONFIG.colors.yellow : CONFIG.colors.red);
-      g.fillRect(bx, by, 40 * f, 6);
+      g.fillRect(bx, by, bw * f, bh);
     }
   }
 
@@ -2898,13 +3130,13 @@ class GameScene extends Phaser.Scene {
   }
 
   cleanupWorkers() {
-    const W = CONFIG.width;
+    const vl = this.viewLeft(), vr = this.viewRight();
     for (const w of this.workers) {
       if (!w.alive) continue;
-      if (w.state === 'leaving' && w.x > W + 80) w.destroy();
-      else if (w.state === 'exiting' && w.scored && w.x < CONFIG.layout.exitX) w.destroy();
-      else if (!w.launched && (w.y > CONFIG.height + 400 || w.x < -300 || w.x > W + 900)) w.destroy();
-      else if (w.launched && w.y > this.cameras.main.scrollY + CONFIG.height + 1500) w.destroy();
+      if (w.state === 'leaving' && w.x > vr + 80) w.destroy();
+      else if (w.state === 'exiting' && w.scored && w.x < vl - 60) w.destroy();
+      else if (!w.launched && (w.y > CONFIG.layout.floorY + 800 || w.x < vl - 800 || w.x > vr + 1200)) w.destroy();
+      else if (w.launched && w.y > this.cameras.main.scrollY + this.S.h + 1500) w.destroy();
     }
     if (this.drag && !this.drag.worker.alive) this.endDrag(false);
     let j = 0;
@@ -2920,25 +3152,34 @@ class GameOverScene extends Phaser.Scene {
   constructor() { super('GameOver'); }
 
   create(data) {
-    const W = CONFIG.width, H = CONFIG.height;
+    const S = screenInfo(this);
+    const { w: W, h: H } = S;
     this.data_ = data;
+    this.restarting = false;
     this.add.rectangle(W / 2, H / 2, W, H, 0x0b0820, 0.62);
+
+    // The panel is laid out around (0, 0) and scaled to fit any screen.
+    const box = this.add.container(W / 2, H / 2).setScale(Math.min(S.ui, (W - 24) / 680, (H - 24) / 700));
+    const Y = (y) => y - 360;
     const g = this.add.graphics();
-    g.fillStyle(CONFIG.colors.ink); g.fillRoundedRect(W / 2 - 330, 60, 660, 600, 30);
-    g.fillStyle(0x2d2850); g.fillRoundedRect(W / 2 - 320, 70, 640, 580, 26);
+    g.fillStyle(CONFIG.colors.ink); g.fillRoundedRect(-330, Y(60), 660, 600, 30);
+    g.fillStyle(0x2d2850); g.fillRoundedRect(-320, Y(70), 640, 580, 26);
+    box.add(g);
 
     const title = data.snapped ? 'CABLE SNAPPED!' : 'SHIFT COMPLETE!';
-    const t = this.add.text(W / 2, 128, title, textStyle(52, data.snapped ? '#ff4757' : '#3ddc84', { strokeThickness: 10 })).setOrigin(0.5).setScale(0.3);
+    const t = this.add.text(0, Y(128), title, textStyle(52, data.snapped ? '#ff4757' : '#3ddc84', { strokeThickness: 10 })).setOrigin(0.5).setScale(0.3);
     this.tweens.add({ targets: t, scale: 1, duration: 450, ease: 'Back.easeOut' });
 
-    const scoreText = this.add.text(W / 2, 214, 'SCORE 0', textStyle(48, '#ffffff')).setOrigin(0.5);
+    const scoreText = this.add.text(0, Y(214), 'SCORE 0', textStyle(48, '#ffffff')).setOrigin(0.5);
     this.tweens.addCounter({
       from: 0, to: data.score, duration: 900, ease: 'Cubic.easeOut',
       onUpdate: (tw) => scoreText.setText(`SCORE ${Math.round(tw.getValue())}`),
     });
+    box.add([t, scoreText]);
     if (data.isBest && data.score > 0) {
-      const badge = this.add.text(W / 2 + 230, 180, 'NEW BEST!', textStyle(22, '#ffd23f')).setOrigin(0.5).setAngle(12);
+      const badge = this.add.text(230, Y(180), 'NEW BEST!', textStyle(22, '#ffd23f')).setOrigin(0.5).setAngle(12);
       this.tweens.add({ targets: badge, scale: 1.15, duration: 400, yoyo: true, repeat: -1 });
+      box.add(badge);
     }
 
     const lines = [
@@ -2946,17 +3187,28 @@ class GameOverScene extends Phaser.Scene {
       data.snapped ? `Flight distance: ${data.flight} m` : `Floors survived: ${data.floors}/${CONFIG.floorsPerRun}`,
       `Delivered: ${data.delivered}   •   Launched: ${data.launched}`,
     ];
-    this.add.text(W / 2, 300, lines.join('\n'), textStyle(26, '#ffffff', { fontFamily: UI_FONT, lineSpacing: 10 })).setOrigin(0.5, 0);
-    this.add.image(W / 2 - 110, 452, 'coin');
-    this.add.text(W / 2 - 88, 436, `+${data.coins} coins  (total ${data.totalCoins})`, textStyle(24, '#ffd23f', { align: 'left' }));
+    box.add(this.add.text(0, Y(300), lines.join('\n'), textStyle(26, '#ffffff', { fontFamily: UI_FONT, lineSpacing: 10 })).setOrigin(0.5, 0));
+    box.add(this.add.image(-110, Y(452), 'coin'));
+    box.add(this.add.text(-88, Y(436), `+${data.coins} coins  (total ${data.totalCoins})`, textStyle(24, '#ffd23f', { align: 'left' })));
 
-    makeButton(this, W / 2, 530, 300, 84, 'PLAY AGAIN', 0x2ecc71, () => this.playAgain(), 34);
-    makeButton(this, W / 2 - 160, 614, 200, 60, 'SHARE', 0x4ea8ff, () => this.share(), 24);
-    makeButton(this, W / 2 + 160, 614, 200, 60, 'MENU', 0xff4f81, () => this.toMenu(), 24);
-    this.toast = this.add.text(W / 2, 684, '', textStyle(18, '#ffffff', { fontFamily: UI_FONT, wordWrap: { width: 900 } })).setOrigin(0.5);
+    for (const b of [
+      makeButton(this, 0, Y(530), 300, 84, 'PLAY AGAIN', 0x2ecc71, () => this.playAgain(), 34),
+      makeButton(this, -160, Y(614), 200, 60, 'SHARE', 0x4ea8ff, () => this.share(), 24),
+      makeButton(this, 160, Y(614), 200, 60, 'MENU', 0xff4f81, () => this.toMenu(), 24),
+    ]) box.add([b.bg, b.txt]);
+    this.toast = this.add.text(0, Y(684), '', textStyle(18, '#ffffff', { fontFamily: UI_FONT, wordWrap: { width: 640 } })).setOrigin(0.5);
+    box.add(this.toast);
 
     this.input.keyboard.addCapture('SPACE');
     this.input.keyboard.once('keydown-SPACE', () => this.playAgain());
+    this.scale.on('resize', this.onResize, this);
+    this.events.once('shutdown', () => this.scale.off('resize', this.onResize, this));
+  }
+
+  onResize() {
+    if (this.restarting) return;
+    this.restarting = true;
+    this.scene.restart(this.data_);
   }
 
   playAgain() {
@@ -3010,6 +3262,7 @@ function fallbackCopy(text) {
 Save.load();
 Sound.muted = Save.data.muted;
 
+const startSize = computeGameSize();
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
@@ -3017,8 +3270,9 @@ const game = new Phaser.Game({
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: CONFIG.width,
-    height: CONFIG.height,
+    width: startSize.w,       // same shape as the screen, so FIT fills it edge to edge
+    height: startSize.h,
+    fullscreenTarget: gameEl,
   },
   render: { antialias: true, roundPixels: false },
   // Raw frame deltas: Phaser's smoothing clamps delta to 16 ms whenever the page lacks focus
@@ -3028,6 +3282,22 @@ const game = new Phaser.Game({
   disableContextMenu: true,
   scene: [BootScene, MenuScene, GameScene, GameOverScene],
 });
+
+// Keep the game the same shape as the screen through resizes, rotation, and fullscreen.
+let fitTimer = 0;
+function fitGame() {
+  const { w, h } = computeGameSize();
+  if (w !== game.scale.width || h !== game.scale.height) game.scale.setGameSize(w, h);
+  else game.scale.refresh();
+}
+const scheduleFit = () => {
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fitGame, 60);
+};
+window.addEventListener('resize', scheduleFit);
+window.addEventListener('orientationchange', scheduleFit);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleFit);
+document.addEventListener('fullscreenchange', scheduleFit);
 
 // Pause audio with the tab; Phaser pauses the game loop itself.
 game.events.on(Phaser.Core.Events.HIDDEN, () => Sound.suspend());

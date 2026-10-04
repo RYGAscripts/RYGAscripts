@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LumiWear | Clothing that glows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* LumiWear — shared styles */
+:root {
+  --bg: #0e0c18;
+  --bg-2: #15122a;
+  --card: #1b1830;
+  --card-2: #232040;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #f3f1fa;
+  --muted: #a9a4c2;
+  --mint: #7cf5d6;
+  --violet: #b48cff;
+  --pink: #ff8ad8;
+  --glow: linear-gradient(120deg, var(--mint), var(--violet) 55%, var(--pink));
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  --max: 1160px;
+  --font: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 85% -10%, rgba(180, 140, 255, 0.16), transparent 60%),
+    radial-gradient(700px 420px at -10% 20%, rgba(124, 245, 214, 0.10), transparent 60%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+main { flex: 1; }
+img, svg { max-width: 100%; display: block; }
+a { color: var(--mint); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 { line-height: 1.15; margin: 0 0 0.5em; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0 0 1em; }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 6px; }
+
+.wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 16px; }
+@media (min-width: 700px) { .wrap { padding: 0 28px; } }
+.section { padding: 64px 0; }
+.section-sm { padding: 40px 0; }
+.muted { color: var(--muted); }
+.center { text-align: center; }
+.glow-text {
+  background: var(--glow);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 12px;
+}
+.skip-link {
+  position: absolute; left: -999px; top: 8px;
+  background: var(--mint); color: #0e0c18; padding: 8px 14px; border-radius: 8px; z-index: 100;
+}
+.skip-link:focus { left: 8px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit; font-weight: 600; font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--glow); color: #120f22; box-shadow: 0 8px 30px rgba(124, 245, 214, 0.25); }
+.btn-primary:hover { box-shadow: 0 10px 38px rgba(180, 140, 255, 0.4); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.06); }
+.btn-block { width: 100%; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* Header */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(14, 12, 24, 0.78);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner { display: flex; align-items: center; gap: 16px; height: 68px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.35rem; color: var(--text); text-decoration: none !important; }
+.logo svg { width: 32px; height: 32px; }
+.nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.nav a { color: var(--muted); padding: 8px 12px; border-radius: 10px; font-weight: 500; text-decoration: none; }
+.nav a:hover, .nav a[aria-current="page"] { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.cart-link { position: relative; display: inline-flex; align-items: center; gap: 6px; color: var(--text) !important; }
+.cart-link svg { width: 22px; height: 22px; }
+.cart-count {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--mint); color: #120f22;
+  font-size: 0.75rem; font-weight: 700; display: inline-grid; place-items: center;
+}
+.cart-count[data-empty="true"] { background: var(--card-2); color: var(--muted); }
+.menu-toggle {
+  display: none; margin-left: auto;
+  background: transparent; border: 1px solid var(--line); color: var(--text);
+  width: 44px; height: 44px; border-radius: 12px; cursor: pointer;
+}
+.menu-toggle svg { width: 22px; height: 22px; margin: auto; }
+@media (max-width: 800px) {
+  .menu-toggle { display: grid; place-items: center; }
+  .nav {
+    display: none;
+    position: absolute; left: 0; right: 0; top: 68px;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    padding: 10px 16px 18px;
+    background: rgba(14, 12, 24, 0.97);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav.open { display: flex; }
+  .nav a { padding: 12px 14px; font-size: 1.05rem; }
+}
+
+/* Hero */
+.hero { padding: 72px 0 56px; }
+.hero-grid { display: grid; gap: 40px; align-items: center; grid-template-columns: 1.1fr 0.9fr; }
+.hero p.lead { font-size: 1.2rem; color: var(--muted); max-width: 34em; }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+.hero-art {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 32px;
+  background: radial-gradient(circle at 50% 45%, rgba(124, 245, 214, 0.25), transparent 62%), var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: grid; place-items: center; overflow: hidden;
+}
+.hero-art svg { width: 78%; height: 78%; animation: float 6s ease-in-out infinite; }
+.hero-badge {
+  position: absolute; bottom: 18px; left: 18px;
+  background: rgba(14, 12, 24, 0.8); border: 1px solid var(--line);
+  padding: 8px 14px; border-radius: 999px; font-size: 0.9rem;
+}
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { .hero-art svg { animation: none; } html { scroll-behavior: auto; } }
+@media (max-width: 860px) {
+  .hero { padding: 40px 0 32px; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-art { max-width: 440px; width: 100%; margin: 0 auto; }
+}
+
+/* Features */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.feature { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+.feature .icon {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+  background: rgba(124, 245, 214, 0.12); color: var(--mint); margin-bottom: 14px;
+}
+.feature .icon svg { width: 24px; height: 24px; }
+.feature p { color: var(--muted); margin: 0; }
+
+/* Section heads */
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; }
+.section-head h2 { margin: 0; }
+
+/* Product grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+@media (max-width: 520px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  color: var(--text); text-decoration: none !important;
+}
+.card:hover { transform: translateY(-4px); border-color: rgba(124, 245, 214, 0.35); box-shadow: var(--shadow); }
+.card-art { aspect-ratio: 1 / 1; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(180, 140, 255, 0.18), transparent 65%), var(--bg-2); position: relative; }
+.card-art svg { width: 82%; height: 82%; }
+.tag {
+  position: absolute; top: 12px; left: 12px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--mint); color: #120f22; padding: 4px 10px; border-radius: 999px;
+}
+.card-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.card-body h3 { font-size: 1.02rem; margin: 0; }
+.card-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; padding-top: 6px; }
+.price { font-weight: 700; }
+.swatches { display: flex; gap: 5px; }
+.swatches span { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.35); }
+
+/* Shop toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid var(--line); background: transparent; color: var(--muted);
+  padding: 8px 16px; border-radius: 999px; font: inherit; font-size: 0.95rem; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+select, input, textarea {
+  font: inherit; color: var(--text); background: var(--bg-2);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 12px 14px; width: 100%;
+}
+select { width: auto; cursor: pointer; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--mint); box-shadow: 0 0 0 3px rgba(124, 245, 214, 0.18); }
+textarea { min-height: 150px; resize: vertical; }
+label { display: block; font-weight: 500; margin-bottom: 6px; }
+.field { margin-bottom: 16px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+.hidden { display: none !important; }
+.hint { font-size: 0.88rem; color: var(--muted); margin-top: 6px; }
+
+/* Product detail */
+.breadcrumb { font-size: 0.92rem; color: var(--muted); margin: 26px 0 18px; }
+.breadcrumb a { color: var(--muted); }
+.product { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
+@media (max-width: 860px) { .product { grid-template-columns: 1fr; gap: 26px; } }
+.product-art {
+  aspect-ratio: 1 / 1; border-radius: 28px; border: 1px solid var(--line);
+  background: radial-gradient(circle at 50% 45%, rgba(124, 245, 214, 0.2), transparent 62%), var(--card);
+  display: grid; place-items: center; position: sticky; top: 92px;
+}
+@media (max-width: 860px) { .product-art { position: static; } }
+.product-art svg { width: 80%; height: 80%; }
+.product h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
+.product .price { font-size: 1.5rem; display: block; margin-bottom: 14px; }
+.option-label { font-weight: 600; margin: 20px 0 10px; display: flex; gap: 8px; }
+.option-label span { color: var(--muted); font-weight: 400; }
+.color-options, .size-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.color-btn {
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--line); outline: 2px solid transparent; outline-offset: 2px;
+}
+.color-btn[aria-pressed="true"] { outline-color: var(--mint); }
+.size-btn {
+  min-width: 52px; padding: 10px 12px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-weight: 600;
+}
+.size-btn[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.qty button { width: 42px; height: 44px; background: transparent; border: 0; color: var(--text); font-size: 1.2rem; cursor: pointer; }
+.qty button:hover { background: rgba(255, 255, 255, 0.06); }
+.qty output, .qty span { min-width: 34px; text-align: center; font-weight: 600; }
+.buy-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; flex-wrap: wrap; }
+.buy-row .btn { flex: 1; min-width: 200px; }
+.details-list { margin: 26px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.details-list li { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; color: var(--muted); }
+.details-list li::before { content: "✦"; color: var(--mint); }
+.notice {
+  margin-top: 16px; padding: 12px 16px; border-radius: var(--radius-sm);
+  background: rgba(124, 245, 214, 0.1); border: 1px solid rgba(124, 245, 214, 0.35); color: var(--text);
+}
+.notice.error { background: rgba(255, 138, 216, 0.1); border-color: rgba(255, 138, 216, 0.4); }
+
+/* Cart */
+.cart-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; align-items: start; }
+@media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.cart-item { display: grid; grid-template-columns: 88px 1fr auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.cart-item:last-child { border-bottom: 0; }
+.cart-thumb { width: 88px; height: 88px; border-radius: 14px; background: var(--bg-2); display: grid; place-items: center; }
+.cart-thumb svg { width: 80%; height: 80%; }
+.cart-item h3 { font-size: 1rem; margin: 0 0 2px; }
+.cart-item .muted { font-size: 0.9rem; }
+.cart-item-actions { display: flex; flex-direction: column; align-items: end; gap: 8px; }
+.link-btn { background: none; border: 0; color: var(--muted); font: inherit; font-size: 0.88rem; cursor: pointer; text-decoration: underline; padding: 0; }
+.link-btn:hover { color: var(--pink); }
+@media (max-width: 520px) {
+  .cart-item { grid-template-columns: 64px 1fr; }
+  .cart-thumb { width: 64px; height: 64px; }
+  .cart-item-actions { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+}
+.summary-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--muted); }
+.summary-row.total { color: var(--text); font-weight: 700; font-size: 1.15rem; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px; }
+.progress { height: 8px; background: var(--bg-2); border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
+.progress span { display: block; height: 100%; background: var(--glow); border-radius: 999px; transition: width 0.3s ease; }
+.empty-state { text-align: center; padding: 50px 20px; }
+.empty-state svg { width: 90px; height: 90px; margin: 0 auto 16px; color: var(--violet); }
+
+/* Content pages */
+.page-head { padding: 56px 0 18px; }
+.page-head p { color: var(--muted); font-size: 1.12rem; max-width: 40em; }
+.prose { max-width: 760px; }
+.prose h2 { font-size: 1.45rem; margin-top: 1.8em; }
+.prose ul { padding-left: 1.2em; }
+.prose li { margin-bottom: 0.4em; }
+.two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: start; }
+@media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+.info-list { list-style: none; padding: 0; margin: 0; }
+.info-list li { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.info-list li:last-child { border-bottom: 0; }
+.info-list svg { width: 22px; height: 22px; color: var(--mint); flex: none; margin-top: 3px; }
+.info-list strong { display: block; }
+.info-list span { color: var(--muted); font-size: 0.95rem; }
+details.faq { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm); margin-bottom: 10px; }
+details.faq summary { cursor: pointer; padding: 18px 20px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::after { content: "+"; color: var(--mint); font-size: 1.4rem; line-height: 1; }
+details.faq[open] summary::after { content: "−"; }
+details.faq div { padding: 0 20px 18px; color: var(--muted); }
+details.faq div p:last-child { margin: 0; }
+.faq-group { margin-bottom: 36px; }
+
+/* CTA band */
+.band {
+  border-radius: 28px; padding: 44px 28px; text-align: center;
+  background: radial-gradient(600px 240px at 50% 0%, rgba(180, 140, 255, 0.28), transparent 70%), var(--card);
+  border: 1px solid var(--line);
+}
+.band p { color: var(--muted); max-width: 36em; margin: 0 auto 22px; }
+.inline-form { display: flex; gap: 10px; max-width: 480px; margin: 0 auto; }
+.inline-form input { border-radius: 999px; padding: 13px 20px; }
+@media (max-width: 520px) { .inline-form { flex-direction: column; } }
+
+.story { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 860px) { .story { grid-template-columns: 1fr; } }
+.story-art { border-radius: 28px; background: var(--card); border: 1px solid var(--line); aspect-ratio: 4 / 3; display: grid; place-items: center; overflow: hidden; }
+.story-art svg { width: 100%; height: 100%; }
+.values { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 26px; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--line); margin-top: 64px; padding: 48px 0 28px; background: rgba(0, 0, 0, 0.2); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 28px; }
+@media (max-width: 800px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1 / -1; } }
+.footer-grid h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 14px; }
+.footer-grid ul { list-style: none; margin: 0; padding: 0; }
+.footer-grid li { margin-bottom: 8px; }
+.footer-grid a { color: var(--text); opacity: 0.85; }
+.footer-brand p { color: var(--muted); max-width: 26em; margin-top: 12px; }
+.footer-bottom { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 36px; padding-top: 20px; color: var(--muted); font-size: 0.9rem; }
+.pay-note { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 140%);
+  background: var(--card-2); border: 1px solid rgba(124, 245, 214, 0.4); color: var(--text);
+  padding: 12px 18px; border-radius: 14px; box-shadow: var(--shadow);
+  display: flex; gap: 14px; align-items: center; z-index: 80;
+  transition: transform 0.3s ease; max-width: calc(100% - 32px);
+}
+.toast.show { transform: translate(-50%, 0); }
+.toast a { font-weight: 600; white-space: nowrap; }
+
+/* Single-file (Google Sites) mode */
+[data-route-page] { display: none; }
+[data-route-page].active { display: block; }
+
+</style>
+</head>
+<body data-mode="single">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap header-inner">
+<a class="logo" href="#home" aria-label="LumiWear home"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
+<button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<nav class="nav" id="site-nav" aria-label="Main"><a href="#home">Home</a><a href="#shop">Shop</a><a href="#about">About</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+<a class="cart-link" href="#cart" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cart-count" data-cart-count data-empty="true">0</span></a>
+</nav></div></header>
+<main id="main">
+<section data-route-page="home"><section class="hero"><div class="wrap hero-grid">
+<div><span class="eyebrow">New collection · Autumn 2026</span>
+<h1>Clothing that <span class="glow-text">glows</span> after dark.</h1>
+<p class="lead">Soft, comfortable everyday pieces with glow-in-the-dark details that charge in daylight and shine at night. Made from organic and recycled materials.</p>
+<div class="hero-actions"><a class="btn btn-primary" href="#shop">Shop the collection</a><a class="btn btn-ghost" href="#about">Our story</a></div></div>
+<div class="hero-art" data-hero-art></div>
+</div></section>
+
+<section class="section-sm"><div class="wrap features">
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><h3>Free shipping over €50</h3><p>Orders under €50 ship for just €4.95. Tracked delivery on every order.</p></div>
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></div><h3>30-day returns</h3><p>Not the right fit? Return unworn items within 30 days for a full refund.</p></div>
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19 14 10"/></svg></div><h3>Better materials</h3><p>Organic cotton and recycled fibres, chosen to last wash after wash.</p></div>
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2Q12 12 22 12Q12 12 12 22Q12 12 2 12Q12 12 12 2Z"/></svg></div><h3>Glows for hours</h3><p>Our prints charge in daylight or lamplight and glow softly in the dark.</p></div>
+</div></section>
+
+<section class="section"><div class="wrap">
+<div class="section-head"><div><span class="eyebrow">Most loved</span><h2>Featured pieces</h2></div><a class="btn btn-ghost" href="#shop">View all products →</a></div>
+<div class="grid" data-featured></div>
+</div></section>
+
+<section class="section"><div class="wrap story">
+<div class="story-art"><svg viewBox="0 0 400 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="sky" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#2b2456"/><stop offset="1" stop-color="#0e0c18"/></radialGradient>
+<filter id="sg"><feGaussianBlur stdDeviation="4"/></filter></defs>
+<rect width="400" height="300" fill="url(#sky)"/>
+<circle cx="310" cy="70" r="30" fill="#f3f1fa" opacity=".9"/><circle cx="322" cy="62" r="28" fill="#211c45"/>
+<g fill="#f3f1fa"><circle cx="60" cy="50" r="1.6"/><circle cx="120" cy="90" r="1.2"/><circle cx="200" cy="40" r="1.8"/><circle cx="250" cy="120" r="1.1"/><circle cx="90" cy="140" r="1.3"/><circle cx="360" cy="150" r="1.5"/><circle cx="170" cy="130" r="1"/></g>
+<path d="M0 230 Q100 190 200 220 T400 210 V300 H0Z" fill="#17142c"/>
+<path d="M0 255 Q120 230 230 250 T400 245 V300 H0Z" fill="#1d1938"/>
+<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6" filter="url(#sg)"/>
+<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6"/>
+</svg></div>
+<div><span class="eyebrow">Why LumiWear</span><h2>Made for the moments <span class="glow-text">after sunset</span></h2>
+<p class="muted">LumiWear started with a simple idea: clothes you love wearing during the day shouldn't fade into the background at night. Every piece carries a small glowing star — a quiet detail that lights up on evening walks, at concerts and on the way home.</p>
+<p class="muted">We keep our collection small and focused, so every item gets the attention it deserves — from fabric choice to the final stitch.</p>
+<a class="btn btn-ghost" href="#about">Read our story</a></div>
+</div></section>
+<section class="section"><div class="wrap"><div class="band">
+<span class="eyebrow">Newsletter</span><h2>Be the first to <span class="glow-text">see new drops</span></h2>
+<p>Get new collections, restocks and subscriber-only offers in your inbox. No spam — unsubscribe any time.</p>
+<form name="newsletter" method="POST" action="https://lumiwearshop.netlify.app/thank-you/newsletter/" target="_blank" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="newsletter"><p class="hidden"><label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p><div class="inline-form">
+<label class="hidden" for="nl-email-139778581245328">Email address</label>
+<input id="nl-email-139778581245328" type="email" name="email" placeholder="Your email address" autocomplete="email" required>
+<button class="btn btn-primary" type="submit">Subscribe</button></div></form>
+</div></div></section></section>
+<section data-route-page="shop"><div class="wrap"><div class="page-head"><span class="eyebrow">Shop</span><h1>All products</h1>
+<p>Everyday essentials with glow-in-the-dark details. Free shipping on orders over €50.</p></div>
+<div data-shop><div class="toolbar"><div class="chips" data-chips role="group" aria-label="Filter by category"></div>
+<div style="display:flex;gap:12px;align-items:center"><span class="muted" data-shop-count></span>
+<label class="hidden" for="sort">Sort by</label><select id="sort" data-sort>
+<option value="featured">Featured</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name A–Z</option>
+</select></div></div>
+<div class="grid" data-shop-grid></div></div></div></section>
+<section data-route-page="product"><div class="wrap" data-product-detail><div class="empty-state"><p class="muted">Loading product…</p>
+<noscript><p>Please enable JavaScript to view this product, or <a href="#contact">contact us</a> to order.</p></noscript></div></div></section>
+<section data-route-page="cart"><div class="wrap" data-cart><div class="page-head"><h1>Your cart</h1></div>
+<div class="panel empty-state hidden" data-cart-empty><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><h2>Your cart is empty</h2>
+<p class="muted">Looks like you haven't added anything yet.</p><a class="btn btn-primary" href="#shop">Start shopping</a></div>
+<div class="cart-layout hidden" data-cart-layout>
+<div><div class="panel" data-cart-items></div><p style="margin-top:16px"><a href="#shop">← Continue shopping</a></p></div>
+<div><div class="panel"><h2 style="font-size:1.3rem">Order summary</h2><div data-cart-summary></div></div>
+<div class="panel" style="margin-top:16px"><h2 style="font-size:1.3rem">Checkout</h2>
+<p class="muted" style="font-size:.95rem">Fill in your details and place your order. We'll email you within 24 hours to confirm and send a secure payment link (iDEAL, card, PayPal or bank transfer).</p>
+<form name="order" method="POST" action="https://lumiwearshop.netlify.app/thank-you/order/" target="_blank" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="order"><p class="hidden"><label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p><div>
+<input type="hidden" name="order-items"><input type="hidden" name="order-total">
+<div class="field"><label for="o-name">Full name</label><input id="o-name" name="name" autocomplete="name" required></div>
+<div class="field"><label for="o-email">Email</label><input id="o-email" type="email" name="email" autocomplete="email" required></div>
+<div class="field"><label for="o-address">Street and house number</label><input id="o-address" name="address" autocomplete="street-address" required></div>
+<div class="field-row"><div class="field"><label for="o-zip">Postal code</label><input id="o-zip" name="postal-code" autocomplete="postal-code" required></div>
+<div class="field"><label for="o-city">City</label><input id="o-city" name="city" autocomplete="address-level2" required></div></div>
+<div class="field"><label for="o-country">Country</label><select id="o-country" name="country" autocomplete="country-name" style="width:100%">
+<option>Netherlands</option><option>Belgium</option><option>Germany</option><option>France</option><option>Luxembourg</option><option>Austria</option><option>Spain</option><option>Italy</option><option>Other EU country</option></select></div>
+<div class="field"><label for="o-note">Note (optional)</label><textarea id="o-note" name="note" style="min-height:80px" placeholder="Anything we should know about your order?"></textarea></div>
+<div class="field"><label style="display:flex;gap:10px;align-items:start;font-weight:400"><input type="checkbox" name="terms" value="accepted" required style="width:auto;margin-top:5px">
+<span>I agree to the <a href="#terms">Terms &amp; Conditions</a> and <a href="#privacy">Privacy Policy</a>.</span></label></div>
+<button class="btn btn-primary btn-block" type="submit">Place order</button>
+</div></form></div></div></div></div></section>
+<section data-route-page="about"><div class="wrap"><div class="page-head"><span class="eyebrow">About us</span><h1>Hi, we're <span class="glow-text">LumiWear</span>.</h1>
+<p>We make comfortable everyday clothing with a little bit of light in it.</p></div>
+<section class="section-sm story"><div class="story-art"><svg viewBox="0 0 400 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="sky" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#2b2456"/><stop offset="1" stop-color="#0e0c18"/></radialGradient>
+<filter id="sg"><feGaussianBlur stdDeviation="4"/></filter></defs>
+<rect width="400" height="300" fill="url(#sky)"/>
+<circle cx="310" cy="70" r="30" fill="#f3f1fa" opacity=".9"/><circle cx="322" cy="62" r="28" fill="#211c45"/>
+<g fill="#f3f1fa"><circle cx="60" cy="50" r="1.6"/><circle cx="120" cy="90" r="1.2"/><circle cx="200" cy="40" r="1.8"/><circle cx="250" cy="120" r="1.1"/><circle cx="90" cy="140" r="1.3"/><circle cx="360" cy="150" r="1.5"/><circle cx="170" cy="130" r="1"/></g>
+<path d="M0 230 Q100 190 200 220 T400 210 V300 H0Z" fill="#17142c"/>
+<path d="M0 255 Q120 230 230 250 T400 245 V300 H0Z" fill="#1d1938"/>
+<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6" filter="url(#sg)"/>
+<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6"/>
+</svg></div>
+<div class="prose"><h2 style="margin-top:0">Our story</h2>
+<p class="muted">LumiWear was created for people who live their lives well past sunset — evening walks, late-night city trips, concerts and festivals. We wanted clothes that feel great all day and have a small surprise once the lights go down.</p>
+<p class="muted">That surprise is our glowing star. Printed or stitched with glow-in-the-dark materials, it charges in daylight or under a lamp and softly lights up in the dark. No batteries, no wires — just a little magic.</p></div></section>
+<section class="section-sm"><h2>What we stand for</h2><div class="values">
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19 14 10"/></svg></div><h3>Better materials</h3><p>We use organic cotton and recycled polyester wherever we can, and we choose fabrics that last.</p></div>
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2Q12 12 22 12Q12 12 12 22Q12 12 2 12Q12 12 12 2Z"/></svg></div><h3>Small, focused collections</h3><p>Fewer pieces, made with more care. We'd rather perfect one hoodie than release ten average ones.</p></div>
+<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg></div><h3>Real, personal service</h3><p>Every message is answered by a real person on our small team — usually within one working day.</p></div>
+</div></section>
+<section class="section"><div class="band"><h2>Ready to find your glow?</h2><p>Explore the full collection of hoodies, tees, joggers and accessories.</p>
+<a class="btn btn-primary" href="#shop">Shop now</a></div></section></div></section>
+<section data-route-page="faq"><div class="wrap"><div class="page-head"><span class="eyebrow">Help centre</span><h1>Frequently asked questions</h1>
+<p>Can't find your answer? <a href="#contact">Send us a message</a> and we'll help you out.</p></div>
+<div class="prose" style="max-width:820px"><div class="faq-group"><h2 style="font-size:1.4rem">Orders & payment</h2><details class="faq"><summary>How do I place an order?</summary><div><p>Add the items you want to your cart, open the cart and fill in your details in the checkout form. After you press <em>Place order</em> we'll email you within 24 hours to confirm everything and send a secure payment link.</p></div></details><details class="faq"><summary>Which payment methods do you accept?</summary><div><p>Our secure payment link supports iDEAL, credit and debit cards (Visa, Mastercard), PayPal and bank transfer.</p></div></details><details class="faq"><summary>Can I change or cancel my order?</summary><div><p>Yes — as long as your order hasn't shipped. Just reply to your confirmation email or send us a message through the contact page and we'll update it.</p></div></details></div><div class="faq-group"><h2 style="font-size:1.4rem">Shipping & returns</h2><details class="faq"><summary>How much does shipping cost?</summary><div><p>Shipping is free on orders over €50. Below that we charge a flat €4.95. Every order is sent with tracking.</p></div></details><details class="faq"><summary>How long does delivery take?</summary><div><p>Orders ship within 1–2 working days after payment. Delivery takes 1–3 working days in the Netherlands and Belgium and 3–7 working days to other EU countries.</p></div></details><details class="faq"><summary>What is your return policy?</summary><div><p>You can return unworn, unwashed items with their tags within 30 days of delivery for a full refund. See <a href="#shipping">Shipping &amp; Returns</a> for the steps.</p></div></details></div><div class="faq-group"><h2 style="font-size:1.4rem">Products & sizing</h2><details class="faq"><summary>How does the glow-in-the-dark print work?</summary><div><p>The print contains a safe, non-toxic photoluminescent pigment. It charges in daylight or under a lamp in a few minutes and then glows for up to several hours, fading gradually. It works again and again — no batteries needed.</p></div></details><details class="faq"><summary>How do I find my size?</summary><div><p>Our tops have a regular unisex fit. Chest width (flat, in cm): XS 48 · S 51 · M 54 · L 57 · XL 60 · XXL 63. If you're between sizes or prefer a looser fit, size up. The Radiant Oversized Tee is cut wide on purpose — size down for a regular fit.</p></div></details><details class="faq"><summary>How should I wash my LumiWear?</summary><div><p>Wash inside out at 30°C with similar colours, don't use bleach or fabric softener, and tumble dry low or hang dry. Don't iron directly on the print. This keeps the glow bright for longer.</p></div></details></div></div></div></section>
+<section data-route-page="contact"><div class="wrap"><div class="page-head"><span class="eyebrow">Contact</span><h1>Get in touch</h1>
+<p>Questions about an order, sizing or a product? Send us a message and a real person from our team will get back to you.</p></div>
+<div class="two-col">
+<div class="panel"><form name="contact" method="POST" action="https://lumiwearshop.netlify.app/thank-you/contact/" target="_blank" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="contact"><p class="hidden"><label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+<div class="field-row"><div class="field"><label for="c-name">Name</label><input id="c-name" name="name" autocomplete="name" required></div>
+<div class="field"><label for="c-email">Email</label><input id="c-email" type="email" name="email" autocomplete="email" required></div></div>
+<div class="field-row"><div class="field"><label for="c-subject">Subject</label><select id="c-subject" name="subject" style="width:100%">
+<option>Question about a product</option><option>Question about my order</option><option>Returns &amp; exchanges</option><option>Sizing advice</option><option>Collaboration or wholesale</option><option>Something else</option></select></div>
+<div class="field"><label for="c-order">Order number <span class="muted">(optional)</span></label><input id="c-order" name="order-number"></div></div>
+<div class="field"><label for="c-message">Message</label><textarea id="c-message" name="message" required placeholder="How can we help?"></textarea></div>
+<button class="btn btn-primary" type="submit">Send message</button>
+<p class="hint">By sending this form you agree to our <a href="#privacy">Privacy Policy</a>.</p>
+</form></div>
+<div class="panel"><ul class="info-list">
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><strong>Response time</strong><span>We reply within 1–2 working days, Monday to Friday.</span></div></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg><div><strong>Shipping</strong><span>Free shipping over €50 · ships within 1–2 working days. <a href="#shipping">More info</a></span></div></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><div><strong>Returns</strong><span>30 days to return unworn items. <a href="#shipping">How to return</a></span></div></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg><div><strong>Quick answers</strong><span>Sizing, washing and payment questions are answered in our <a href="#faq">FAQ</a>.</span></div></li>
+</ul></div></div></div></section>
+<section data-route-page="shipping"><div class="wrap"><div class="page-head"><span class="eyebrow">Help</span><h1>Shipping &amp; Returns</h1></div>
+<div class="prose">
+<h2>Shipping costs</h2><ul><li>Orders over €50: <strong>free shipping</strong></li><li>Orders under €50: <strong>€4.95</strong> flat rate</li><li>Every order is sent with a tracking code.</li></ul>
+<h2>Delivery times</h2><p>Orders are packed and shipped within 1–2 working days after payment.</p>
+<ul><li>Netherlands &amp; Belgium: 1–3 working days</li><li>Other EU countries: 3–7 working days</li></ul>
+<p>Outside the EU? <a href="#contact">Contact us</a> and we'll see what we can do.</p>
+<h2>Returns</h2><p>You have 30 days after delivery to return your items. Items must be unworn, unwashed and have their original tags attached.</p>
+<ol><li>Send us a message through the <a href="#contact">contact page</a> with your order number and the items you want to return.</li>
+<li>We'll reply with the return address and instructions.</li><li>Pack the items securely and send them back. Return shipping costs are for the customer, unless the item is faulty or we made a mistake.</li>
+<li>Once we receive and check your return, we refund you within 5 working days using your original payment method.</li></ol>
+<h2>Exchanges</h2><p>Need a different size or colour? Mention it in your return message and we'll send the new item as soon as your return is on its way.</p>
+<h2>Faulty or wrong items</h2><p>Received something damaged or not what you ordered? Let us know within 14 days with a photo and we'll replace it or refund you, including shipping costs.</p>
+</div></div></section>
+<section data-route-page="privacy"><div class="wrap"><div class="page-head"><span class="eyebrow">Legal</span><h1>Privacy Policy</h1><p>Last updated: October 2026</p></div>
+<div class="prose">
+<p>LumiWear respects your privacy. This policy explains what personal data we collect, why we collect it and what your rights are under the General Data Protection Regulation (GDPR).</p>
+<h2>What we collect</h2><ul><li><strong>Order details:</strong> your name, email address, shipping address and the products you order.</li>
+<li><strong>Messages:</strong> your name, email address and the content of messages you send through our contact form.</li>
+<li><strong>Newsletter:</strong> your email address, if you subscribe.</li></ul>
+<h2>Why we use it</h2><ul><li>To process, ship and support your order.</li><li>To answer your questions.</li><li>To send our newsletter, only if you subscribed. Every email has an unsubscribe link.</li></ul>
+<h2>Who we share it with</h2><p>We only share data with services we need to run the shop: our website host (Netlify, which processes form submissions), our payment provider and our delivery partner. We never sell your data.</p>
+<h2>Cookies and local storage</h2><p>We don't use tracking or advertising cookies. Your cart is saved in your own browser's local storage so it's still there when you come back. It never leaves your device until you place an order.</p>
+<h2>How long we keep it</h2><p>Order data is kept for 7 years because of tax law. Messages are deleted after 12 months. Newsletter data is deleted as soon as you unsubscribe.</p>
+<h2>Your rights</h2><p>You can ask to see, correct or delete your personal data, or object to how we use it, at any time. Send us a request through the <a href="#contact">contact page</a> and we'll respond within 30 days. You also have the right to file a complaint with your national data protection authority.</p>
+</div></div></section>
+<section data-route-page="terms"><div class="wrap"><div class="page-head"><span class="eyebrow">Legal</span><h1>Terms &amp; Conditions</h1><p>Last updated: October 2026</p></div>
+<div class="prose">
+<h2>1. General</h2><p>These terms apply to every order placed through the LumiWear website. By placing an order you agree to these terms.</p>
+<h2>2. Prices</h2><p>All prices are in euros (€) and include VAT. Shipping costs are shown in your cart before you order. We may change prices at any time, but the price shown when you placed your order is the price you pay.</p>
+<h2>3. Ordering and payment</h2><p>After you place an order you receive an email with an order confirmation and a secure payment link. The purchase agreement is final once payment is received. If payment isn't completed within 7 days, the order is cancelled automatically.</p>
+<h2>4. Delivery</h2><p>We aim to ship within 1–2 working days after payment. Delivery times are an estimate; a delay does not entitle you to compensation, but you may cancel your order for a full refund if delivery takes more than 30 days.</p>
+<h2>5. Right of withdrawal</h2><p>You have the right to withdraw from your purchase within 30 days of delivery without giving a reason, as described on our <a href="#shipping">Shipping &amp; Returns</a> page. Items must be returned unworn, unwashed and with their tags attached.</p>
+<h2>6. Warranty</h2><p>Our products meet the reasonable expectations you may have of them. Faults caused by normal wear, incorrect washing or misuse are not covered. Report faulty items within 14 days of discovering the fault.</p>
+<h2>7. Complaints</h2><p>Not happy with something? Let us know through the <a href="#contact">contact page</a>. We'll respond within 2 working days and aim to find a solution within 14 days. You can also use the EU Online Dispute Resolution platform at <a href="https://ec.europa.eu/consumers/odr" rel="noopener" target="_blank">ec.europa.eu/consumers/odr</a>.</p>
+<h2>8. Applicable law</h2><p>These terms are governed by Dutch law, without affecting the consumer protection rules of your country of residence.</p>
+</div></div></section>
+</main>
+<footer class="site-footer"><div class="wrap">
+<div class="footer-grid">
+<div class="footer-brand"><a class="logo" href="#home"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
+<p>Comfortable everyday clothing with glow-in-the-dark details. Made from organic and recycled materials.</p></div>
+<div><h4>Shop</h4><ul><li><a href="#shop">All products</a></li><li><a href="#shop">Hoodies &amp; Sweaters</a></li><li><a href="#shop">T-shirts</a></li><li><a href="#cart">Your cart</a></li></ul></div>
+<div><h4>Help</h4><ul><li><a href="#faq">FAQ &amp; size guide</a></li><li><a href="#shipping">Shipping &amp; Returns</a></li><li><a href="#contact">Contact us</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="#about">About LumiWear</a></li><li><a href="#privacy">Privacy Policy</a></li><li><a href="#terms">Terms &amp; Conditions</a></li></ul></div>
+</div>
+<div class="footer-bottom"><span>© <span data-year>2026</span> LumiWear. All rights reserved.</span>
+<span class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Secure payment link sent by email after every order</span></div>
+</div></footer>
+<script>
+/* LumiWear — shop logic (products, cart, pages) */
+(function () {
+  "use strict";
+
+  /* ---------- Settings: edit these to change prices / shipping ---------- */
+  var SETTINGS = {
+    currency: "EUR",
+    locale: "en-IE",
+    freeShippingFrom: 50,
+    shippingCost: 4.95,
+    storageKey: "lumiwear-cart-v1"
+  };
+
+  var TOP_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+  var ONE_SIZE = ["One size"];
+
+  /* ---------- Products ---------- */
+  var PRODUCTS = [
+    {
+      id: "aurora-hoodie", name: "Aurora Hoodie", type: "hoodie", category: "hoodies",
+      price: 54.95, tag: "Bestseller", featured: true,
+      short: "Heavyweight hoodie with a glow-in-the-dark LumiWear star.",
+      description: "Our signature hoodie in a soft, brushed-back cotton blend. The chest star is printed with glow-in-the-dark ink that charges in daylight and softly shines at night.",
+      details: ["80% organic cotton, 20% recycled polyester", "Heavyweight 400 g/m² fleece", "Glow-in-the-dark chest print", "Kangaroo pocket and flat drawcords", "Relaxed unisex fit"],
+      colors: [{ name: "Midnight", hex: "#2a2552" }, { name: "Cloud", hex: "#e8e5f2" }, { name: "Lilac", hex: "#b9a3ef" }],
+      sizes: TOP_SIZES
+    },
+    {
+      id: "glow-classic-tee", name: "Glow Classic Tee", type: "tee", category: "tops",
+      price: 24.95, featured: true,
+      short: "Everyday tee with a small glowing chest logo.",
+      description: "The tee you'll reach for every day. Mid-weight organic cotton, a clean regular fit and a small glow-in-the-dark star on the chest.",
+      details: ["100% organic cotton", "Mid-weight 180 g/m² jersey", "Glow-in-the-dark chest print", "Ribbed crew neck", "Regular unisex fit"],
+      colors: [{ name: "Cloud", hex: "#eceaf4" }, { name: "Midnight", hex: "#27234a" }, { name: "Mint", hex: "#86dcc3" }, { name: "Blush", hex: "#f2a7c9" }],
+      sizes: TOP_SIZES
+    },
+    {
+      id: "radiant-oversized-tee", name: "Radiant Oversized Tee", type: "oversized", category: "tops",
+      price: 29.95, tag: "New", featured: true,
+      short: "Boxy, heavyweight tee with dropped shoulders.",
+      description: "A heavier, boxier take on our classic tee with dropped shoulders and a slightly cropped length. Finished with a glowing star on the chest.",
+      details: ["100% organic cotton", "Heavyweight 240 g/m² jersey", "Dropped shoulders, boxy fit", "Glow-in-the-dark chest print", "Size down for a regular fit"],
+      colors: [{ name: "Ink", hex: "#1f1c38" }, { name: "Sand", hex: "#dccdb4" }, { name: "Lilac", hex: "#b9a3ef" }],
+      sizes: TOP_SIZES
+    },
+    {
+      id: "nightfall-crewneck", name: "Nightfall Crewneck", type: "sweater", category: "hoodies",
+      price: 44.95,
+      short: "Soft crewneck sweatshirt for cool evenings.",
+      description: "A brushed-back crewneck that's warm without the bulk. Ribbed cuffs and hem keep the shape, and the chest star glows after dark.",
+      details: ["80% organic cotton, 20% recycled polyester", "Mid-weight 320 g/m² fleece", "Ribbed collar, cuffs and hem", "Glow-in-the-dark chest print", "Regular unisex fit"],
+      colors: [{ name: "Forest", hex: "#2f5b4c" }, { name: "Midnight", hex: "#2a2552" }, { name: "Oat", hex: "#e4dac8" }],
+      sizes: TOP_SIZES
+    },
+    {
+      id: "halo-joggers", name: "Halo Joggers", type: "joggers", category: "bottoms",
+      price: 39.95, featured: true,
+      short: "Tapered joggers with reflective side detail.",
+      description: "Comfortable tapered joggers with an elastic waist, deep pockets and a reflective stripe that lights up in headlights and camera flashes.",
+      details: ["80% organic cotton, 20% recycled polyester", "Elastic waist with drawcord", "Two side pockets and one back pocket", "Reflective side detail", "Tapered fit with cuffed ankles"],
+      colors: [{ name: "Charcoal", hex: "#3a3848" }, { name: "Midnight", hex: "#2a2552" }, { name: "Oat", hex: "#e4dac8" }],
+      sizes: TOP_SIZES
+    },
+    {
+      id: "lumi-cap", name: "Lumi Cap", type: "cap", category: "accessories",
+      price: 19.95,
+      short: "Six-panel cap with an embroidered glow star.",
+      description: "A classic six-panel dad cap with a curved brim, adjustable strap and an embroidered star stitched with glow-in-the-dark thread.",
+      details: ["100% cotton twill", "Glow-in-the-dark embroidered star", "Adjustable strap with metal buckle", "Curved brim", "One size fits most"],
+      colors: [{ name: "Midnight", hex: "#2a2552" }, { name: "Cloud", hex: "#eceaf4" }, { name: "Mint", hex: "#86dcc3" }],
+      sizes: ONE_SIZE
+    },
+    {
+      id: "spark-beanie", name: "Spark Beanie", type: "beanie", category: "accessories",
+      price: 17.95,
+      short: "Chunky rib-knit beanie with a pom.",
+      description: "A warm, chunky rib-knit beanie with a fold-over cuff and a fluffy pom. The woven label glows softly after dark.",
+      details: ["100% recycled acrylic", "Chunky rib knit", "Fold-over cuff", "Glow-in-the-dark woven label", "One size fits most"],
+      colors: [{ name: "Lilac", hex: "#b9a3ef" }, { name: "Ink", hex: "#1f1c38" }, { name: "Blush", hex: "#f2a7c9" }],
+      sizes: ONE_SIZE
+    },
+    {
+      id: "beam-tote", name: "Beam Tote Bag", type: "tote", category: "accessories",
+      price: 14.95,
+      short: "Sturdy canvas tote for everyday carry.",
+      description: "A heavy canvas tote that fits a laptop, groceries and everything in between. Printed with our glow star so you'll never lose it in the dark.",
+      details: ["100% organic cotton canvas", "Fits a 15\" laptop", "Inner pocket", "Long handles for shoulder carry", "38 × 42 cm"],
+      colors: [{ name: "Natural", hex: "#efe7d6" }, { name: "Ink", hex: "#1f1c38" }],
+      sizes: ONE_SIZE
+    }
+  ];
+
+  var CATEGORIES = [
+    { id: "all", name: "All" },
+    { id: "tops", name: "T-shirts" },
+    { id: "hoodies", name: "Hoodies & Sweaters" },
+    { id: "bottoms", name: "Bottoms" },
+    { id: "accessories", name: "Accessories" }
+  ];
+
+  /* ---------- Helpers ---------- */
+  var money = (function () {
+    try {
+      var f = new Intl.NumberFormat(SETTINGS.locale, { style: "currency", currency: SETTINGS.currency });
+      return function (n) { return f.format(n); };
+    } catch (e) {
+      return function (n) { return "€" + n.toFixed(2); };
+    }
+  })();
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function findProduct(id) {
+    for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id === id) return PRODUCTS[i];
+    return null;
+  }
+  function findColor(p, name) {
+    for (var i = 0; i < p.colors.length; i++) if (p.colors[i].name === name) return p.colors[i];
+    return p.colors[0];
+  }
+
+  var SINGLE = document.body.getAttribute("data-mode") === "single";
+  var BASE = document.body.getAttribute("data-base") || "";
+
+  function linkTo(page, id) {
+    if (SINGLE) return "#" + page + (id ? "/" + id : "");
+    var paths = { home: "", shop: "shop/", cart: "cart/", product: "shop/product/" };
+    var href = BASE + (paths[page] || page + "/");
+    if (page === "product" && id) href += "?id=" + encodeURIComponent(id);
+    return href || "./";
+  }
+
+  /* ---------- Storage (with fallback if blocked) ---------- */
+  var memoryStore = {};
+  function readStore(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return memoryStore[key] || null; }
+  }
+  function writeStore(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (e) { memoryStore[key] = value; }
+  }
+
+  /* ---------- Cart ---------- */
+  function getCart() {
+    try {
+      var data = JSON.parse(readStore(SETTINGS.storageKey) || "[]");
+      return Array.isArray(data) ? data.filter(function (l) { return findProduct(l.id) && l.qty > 0; }) : [];
+    } catch (e) { return []; }
+  }
+  function saveCart(cart) {
+    writeStore(SETTINGS.storageKey, JSON.stringify(cart));
+    updateCartCount();
+  }
+  function addToCart(id, color, size, qty) {
+    var cart = getCart();
+    for (var i = 0; i < cart.length; i++) {
+      var l = cart[i];
+      if (l.id === id && l.color === color && l.size === size) {
+        l.qty = Math.min(99, l.qty + qty);
+        saveCart(cart);
+        return;
+      }
+    }
+    cart.push({ id: id, color: color, size: size, qty: qty });
+    saveCart(cart);
+  }
+  function cartTotals(cart) {
+    var subtotal = 0, count = 0;
+    cart.forEach(function (l) { subtotal += findProduct(l.id).price * l.qty; count += l.qty; });
+    subtotal = Math.round(subtotal * 100) / 100;
+    var shipping = subtotal === 0 || subtotal >= SETTINGS.freeShippingFrom ? 0 : SETTINGS.shippingCost;
+    return { subtotal: subtotal, shipping: shipping, total: Math.round((subtotal + shipping) * 100) / 100, count: count };
+  }
+  function updateCartCount() {
+    var n = cartTotals(getCart()).count;
+    $all("[data-cart-count]").forEach(function (el) {
+      el.textContent = n;
+      el.setAttribute("data-empty", n === 0 ? "true" : "false");
+    });
+  }
+
+  /* ---------- Product illustrations (inline SVG, no image files needed) ---------- */
+  var SHAPES = {
+    tee: { d: "M70 32 L88 24 Q100 38 112 24 L130 32 L166 58 L150 84 L136 74 L136 176 L64 176 L64 74 L50 84 L34 58 Z", logo: [84, 66], extra: "M88 24 Q100 38 112 24" },
+    oversized: { d: "M62 34 L88 24 Q100 38 112 24 L138 34 L178 72 L158 100 L144 90 L144 172 L56 172 L56 90 L42 100 L22 72 Z", logo: [82, 68], extra: "M88 24 Q100 38 112 24" },
+    sweater: { d: "M70 34 L88 26 Q100 38 112 26 L130 34 L158 52 L178 150 L158 156 L138 84 L136 178 L64 178 L62 84 L42 156 L22 150 L42 52 Z", logo: [84, 70], extra: "M88 26 Q100 38 112 26 M64 166 L136 166 M24 140 L42 144 M176 140 L158 144" },
+    hoodie: { d: "M70 40 L82 30 Q100 44 118 30 L130 40 L158 56 L178 152 L158 158 L138 88 L136 180 L64 180 L62 88 L42 158 L22 152 L42 56 Z", hood: "M78 40 Q78 6 100 6 Q122 6 122 40 Q100 52 78 40 Z", logo: [84, 76], extra: "M64 168 L136 168 M76 128 L124 128 L130 158 L70 158 Z M94 44 L92 74 M106 44 L108 74" },
+    joggers: { d: "M64 26 L136 26 L142 168 L148 180 L110 182 L104 176 L100 82 L96 176 L90 182 L52 180 L58 168 Z", logo: [118, 50], extra: "M64 40 L136 40 M57 166 L95 166 M105 166 L143 166 M70 40 Q74 66 64 74" },
+    cap: { d: "M42 122 Q44 52 100 50 Q156 52 158 122 Z", brim: "M30 120 Q100 106 172 120 Q190 130 178 142 Q100 126 24 138 Q14 128 30 120 Z", logo: [94, 90], extra: "M100 50 L100 122 M70 58 Q60 90 64 120 M130 58 Q140 90 136 120" },
+    beanie: { d: "M46 132 Q46 56 100 56 Q154 56 154 132 Z", cuff: "M40 116 Q100 104 160 116 L160 156 Q100 146 40 156 Z", pom: [100, 46, 18], logo: [92, 124], extra: "M70 66 L66 116 M85 60 L84 112 M100 58 L100 110 M115 60 L116 112 M130 66 L134 116" },
+    tote: { d: "M46 74 L154 74 L162 180 L38 180 Z", handle: "M74 76 Q72 26 100 26 Q128 26 126 76", logo: [92, 118], extra: "" }
+  };
+
+  var svgCount = 0;
+  function isLight(hex) {
+    var h = hex.replace("#", "");
+    var r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+  }
+  function star(x, y, s) {
+    return "M" + x + " " + (y - s) + " Q" + x + " " + y + " " + (x + s) + " " + y +
+      " Q" + x + " " + y + " " + x + " " + (y + s) + " Q" + x + " " + y + " " + (x - s) + " " + y +
+      " Q" + x + " " + y + " " + x + " " + (y - s) + " Z";
+  }
+  function productArt(p, colorName) {
+    var c = findColor(p, colorName);
+    var s = SHAPES[p.type] || SHAPES.tee;
+    var id = "lw" + (++svgCount);
+    var line = isLight(c.hex) ? "rgba(30,25,60,0.28)" : "rgba(255,255,255,0.16)";
+    var glow = isLight(c.hex) ? "#3fcfae" : "#7cf5d6";
+    var body = function (d) {
+      return '<path d="' + d + '" fill="' + c.hex + '"/>' +
+        '<path d="' + d + '" fill="url(#' + id + 's)" stroke="' + line + '" stroke-width="1.5" stroke-linejoin="round"/>';
+    };
+    var out = '<svg viewBox="0 0 200 200" role="img" aria-label="' + esc(p.name + " in " + c.name) + '" xmlns="http://www.w3.org/2000/svg">' +
+      "<defs>" +
+      '<linearGradient id="' + id + 's" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#fff" stop-opacity="0.22"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/>' +
+      '<stop offset="1" stop-color="#000" stop-opacity="0.22"/></linearGradient>' +
+      '<filter id="' + id + 'g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>' +
+      "</defs>" +
+      '<ellipse cx="100" cy="188" rx="62" ry="7" fill="#000" opacity="0.28"/>';
+    if (s.handle) out += '<path d="' + s.handle + '" fill="none" stroke="' + c.hex + '" stroke-width="9" stroke-linecap="round"/><path d="' + s.handle + '" fill="none" stroke="' + line + '" stroke-width="1.5"/>';
+    if (s.hood) out += body(s.hood);
+    out += body(s.d);
+    if (s.brim) out += body(s.brim);
+    if (s.cuff) out += body(s.cuff);
+    if (s.pom) out += '<circle cx="' + s.pom[0] + '" cy="' + s.pom[1] + '" r="' + s.pom[2] + '" fill="' + c.hex + '"/><circle cx="' + s.pom[0] + '" cy="' + s.pom[1] + '" r="' + s.pom[2] + '" fill="url(#' + id + 's)" stroke="' + line + '" stroke-width="1.5"/>';
+    if (s.extra) out += '<path d="' + s.extra + '" fill="none" stroke="' + line + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    var lx = s.logo[0], ly = s.logo[1], sz = p.type === "tote" ? 14 : 8;
+    if (p.type === "tote") { lx = 100; ly = 126; }
+    out += '<path d="' + star(lx, ly, sz) + '" fill="' + glow + '" filter="url(#' + id + 'g)" opacity="0.9"/>' +
+      '<path d="' + star(lx, ly, sz) + '" fill="' + glow + '"/>';
+    return out + "</svg>";
+  }
+
+  /* ---------- Rendering ---------- */
+  function productCard(p) {
+    return '<a class="card" href="' + linkTo("product", p.id) + '">' +
+      '<div class="card-art">' + (p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + productArt(p) + "</div>" +
+      '<div class="card-body"><h3>' + esc(p.name) + '</h3><span class="muted" style="font-size:.9rem">' + esc(p.short) + "</span>" +
+      '<div class="card-meta"><span class="price">' + money(p.price) + '</span><span class="swatches" aria-label="' + p.colors.length + ' colours">' +
+      p.colors.map(function (c) { return '<span style="background:' + c.hex + '" title="' + esc(c.name) + '"></span>'; }).join("") +
+      "</span></div></div></a>";
+  }
+
+  function renderFeatured() {
+    $all("[data-featured]").forEach(function (el) {
+      el.innerHTML = PRODUCTS.filter(function (p) { return p.featured; }).map(productCard).join("");
+    });
+  }
+
+  function renderHeroArt() {
+    $all("[data-hero-art]").forEach(function (el) {
+      el.innerHTML = productArt(PRODUCTS[0], "Midnight");
+    });
+  }
+
+  function renderShop() {
+    var root = $("[data-shop]");
+    if (!root) return;
+    var state = { cat: "all", sort: "featured" };
+    try {
+      var wanted = new URLSearchParams(window.location.search).get("cat");
+      if (CATEGORIES.some(function (c) { return c.id === wanted; })) state.cat = wanted;
+    } catch (e) { /* ignore */ }
+    var chips = $("[data-chips]", root), grid = $("[data-shop-grid]", root), count = $("[data-shop-count]", root), sort = $("[data-sort]", root);
+    chips.innerHTML = CATEGORIES.map(function (c) {
+      return '<button type="button" class="chip" data-cat="' + c.id + '" aria-pressed="' + (c.id === state.cat) + '">' + esc(c.name) + "</button>";
+    }).join("");
+    function draw() {
+      var list = PRODUCTS.filter(function (p) { return state.cat === "all" || p.category === state.cat; });
+      if (state.sort === "price-asc") list.sort(function (a, b) { return a.price - b.price; });
+      if (state.sort === "price-desc") list.sort(function (a, b) { return b.price - a.price; });
+      if (state.sort === "name") list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+      grid.innerHTML = list.map(productCard).join("");
+      count.textContent = list.length + (list.length === 1 ? " product" : " products");
+    }
+    chips.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-cat]");
+      if (!b) return;
+      state.cat = b.getAttribute("data-cat");
+      $all("[data-cat]", chips).forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      draw();
+    });
+    sort.addEventListener("change", function () { state.sort = sort.value; draw(); });
+    draw();
+  }
+
+  function renderProduct(id) {
+    var root = $("[data-product-detail]");
+    if (!root) return;
+    if (id === undefined) {
+      try { id = new URLSearchParams(window.location.search).get("id"); } catch (e) { id = null; }
+    }
+    var p = findProduct(id);
+    if (!p) {
+      root.innerHTML = '<div class="empty-state"><h1>Product not found</h1><p class="muted">This product may have sold out or the link is incorrect.</p>' +
+        '<a class="btn btn-primary" href="' + linkTo("shop") + '">Browse the shop</a></div>';
+      document.title = "Product not found | LumiWear";
+      return;
+    }
+    document.title = p.name + " | LumiWear";
+    var sel = { color: p.colors[0].name, size: p.sizes.length === 1 ? p.sizes[0] : null, qty: 1 };
+    root.innerHTML =
+      '<nav class="breadcrumb" aria-label="Breadcrumb"><a href="' + linkTo("home") + '">Home</a> / <a href="' + linkTo("shop") + '">Shop</a> / ' + esc(p.name) + "</nav>" +
+      '<div class="product"><div class="product-art" data-art></div><div>' +
+      (p.tag ? '<span class="eyebrow">' + esc(p.tag) + "</span>" : "") +
+      "<h1>" + esc(p.name) + '</h1><span class="price">' + money(p.price) + "</span>" +
+      "<p>" + esc(p.description) + "</p>" +
+      '<div class="option-label">Colour: <span data-color-name>' + esc(sel.color) + "</span></div>" +
+      '<div class="color-options">' + p.colors.map(function (c, i) {
+        return '<button type="button" class="color-btn" style="background:' + c.hex + '" data-color="' + esc(c.name) + '" aria-label="' + esc(c.name) + '" aria-pressed="' + (i === 0) + '"></button>';
+      }).join("") + "</div>" +
+      '<div class="option-label">Size: <span data-size-name>' + (sel.size ? esc(sel.size) : "Choose a size") + "</span></div>" +
+      '<div class="size-options">' + p.sizes.map(function (s) {
+        return '<button type="button" class="size-btn" data-size="' + esc(s) + '" aria-pressed="' + (sel.size === s) + '">' + esc(s) + "</button>";
+      }).join("") + "</div>" +
+      (p.sizes.length > 1 ? '<p class="hint">Between sizes? Check our <a href="' + linkTo("faq") + '">size guide in the FAQ</a>.</p>' : "") +
+      '<div class="buy-row"><div class="qty" role="group" aria-label="Quantity"><button type="button" data-qty="-1" aria-label="Decrease quantity">−</button><output data-qty-val>1</output><button type="button" data-qty="1" aria-label="Increase quantity">+</button></div>' +
+      '<button type="button" class="btn btn-primary" data-add>Add to cart</button></div>' +
+      '<div data-msg aria-live="polite"></div>' +
+      '<ul class="details-list">' + p.details.map(function (d) { return "<li>" + esc(d) + "</li>"; }).join("") +
+      "<li>Free shipping on orders over " + money(SETTINGS.freeShippingFrom) + " · 30-day returns</li></ul>" +
+      "</div></div>" +
+      '<section class="section-sm"><div class="section-head"><h2>You may also like</h2></div><div class="grid">' +
+      PRODUCTS.filter(function (x) { return x.id !== p.id; }).slice(0, 4).map(productCard).join("") + "</div></section>";
+
+    var art = $("[data-art]", root), msg = $("[data-msg]", root);
+    function drawArt() { art.innerHTML = productArt(p, sel.color); }
+    drawArt();
+    root.onclick = function (e) {
+      var t;
+      if ((t = e.target.closest("[data-color]"))) {
+        sel.color = t.getAttribute("data-color");
+        $all("[data-color]", root).forEach(function (b) { b.setAttribute("aria-pressed", b === t ? "true" : "false"); });
+        $("[data-color-name]", root).textContent = sel.color;
+        drawArt();
+      } else if ((t = e.target.closest("[data-size]"))) {
+        sel.size = t.getAttribute("data-size");
+        $all("[data-size]", root).forEach(function (b) { b.setAttribute("aria-pressed", b === t ? "true" : "false"); });
+        $("[data-size-name]", root).textContent = sel.size;
+        msg.innerHTML = "";
+      } else if ((t = e.target.closest("[data-qty]"))) {
+        sel.qty = Math.max(1, Math.min(99, sel.qty + parseInt(t.getAttribute("data-qty"), 10)));
+        $("[data-qty-val]", root).textContent = sel.qty;
+      } else if (e.target.closest("[data-add]")) {
+        if (!sel.size) {
+          msg.innerHTML = '<div class="notice error">Please choose a size first.</div>';
+          return;
+        }
+        addToCart(p.id, sel.color, sel.size, sel.qty);
+        msg.innerHTML = "";
+        toast(sel.qty + " × " + p.name + " added to your cart");
+      }
+    };
+  }
+
+  function renderCart() {
+    var root = $("[data-cart]");
+    if (!root) return;
+    var cart = getCart();
+    var list = $("[data-cart-items]", root), summary = $("[data-cart-summary]", root), empty = $("[data-cart-empty]", root), layout = $("[data-cart-layout]", root);
+    if (!cart.length) {
+      empty.classList.remove("hidden");
+      layout.classList.add("hidden");
+      return;
+    }
+    empty.classList.add("hidden");
+    layout.classList.remove("hidden");
+    list.innerHTML = cart.map(function (l, i) {
+      var p = findProduct(l.id);
+      return '<div class="cart-item"><a class="cart-thumb" href="' + linkTo("product", p.id) + '" aria-label="' + esc(p.name) + '">' + productArt(p, l.color) + "</a>" +
+        '<div><h3><a href="' + linkTo("product", p.id) + '" style="color:inherit">' + esc(p.name) + '</a></h3><div class="muted">' + esc(l.color) + " · " + esc(l.size) + "</div>" +
+        '<div class="muted">' + money(p.price) + " each</div></div>" +
+        '<div class="cart-item-actions"><div class="qty" role="group" aria-label="Quantity"><button type="button" data-line="' + i + '" data-delta="-1" aria-label="Decrease quantity">−</button><span>' + l.qty + '</span><button type="button" data-line="' + i + '" data-delta="1" aria-label="Increase quantity">+</button></div>' +
+        '<strong>' + money(p.price * l.qty) + '</strong><button type="button" class="link-btn" data-remove="' + i + '">Remove</button></div></div>';
+    }).join("");
+    var t = cartTotals(cart);
+    var left = Math.max(0, SETTINGS.freeShippingFrom - t.subtotal);
+    summary.innerHTML =
+      '<div class="summary-row"><span>Subtotal (' + t.count + (t.count === 1 ? " item" : " items") + ")</span><span>" + money(t.subtotal) + "</span></div>" +
+      '<div class="summary-row"><span>Shipping</span><span>' + (t.shipping === 0 ? "Free" : money(t.shipping)) + "</span></div>" +
+      '<div class="summary-row total"><span>Total</span><span>' + money(t.total) + "</span></div>" +
+      '<p class="hint">' + (left > 0 ? "Add " + money(left) + " more for free shipping." : "You've unlocked free shipping!") + "</p>" +
+      '<div class="progress"><span style="width:' + Math.min(100, (t.subtotal / SETTINGS.freeShippingFrom) * 100) + '%"></span></div>';
+    list.onclick = function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      var c = getCart();
+      if (b.hasAttribute("data-remove")) c.splice(parseInt(b.getAttribute("data-remove"), 10), 1);
+      else if (b.hasAttribute("data-delta")) {
+        var line = c[parseInt(b.getAttribute("data-line"), 10)];
+        line.qty = Math.max(0, Math.min(99, line.qty + parseInt(b.getAttribute("data-delta"), 10)));
+        if (line.qty === 0) c.splice(parseInt(b.getAttribute("data-line"), 10), 1);
+      }
+      saveCart(c);
+      renderCart();
+    };
+  }
+
+  function setupOrderForm() {
+    var form = $('form[name="order"]');
+    if (!form) return;
+    form.addEventListener("submit", function (e) {
+      var cart = getCart();
+      if (!cart.length) { e.preventDefault(); renderCart(); return; }
+      var t = cartTotals(cart);
+      var lines = cart.map(function (l) {
+        var p = findProduct(l.id);
+        return l.qty + " x " + p.name + " (" + l.color + ", " + l.size + ") - " + money(p.price * l.qty);
+      });
+      lines.push("Subtotal: " + money(t.subtotal), "Shipping: " + (t.shipping ? money(t.shipping) : "Free"), "Total: " + money(t.total));
+      form.querySelector('[name="order-items"]').value = lines.join("\n");
+      form.querySelector('[name="order-total"]').value = money(t.total);
+      if (SINGLE) setTimeout(function () { saveCart([]); renderCart(); }, 800);
+    });
+  }
+
+  function handleThanks() {
+    var root = $("[data-thanks]");
+    if (root && root.getAttribute("data-thanks") === "order") saveCart([]);
+  }
+
+  /* ---------- Toast ---------- */
+  var toastTimer;
+  function toast(text) {
+    var el = $("#toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "toast";
+      el.className = "toast";
+      el.setAttribute("role", "status");
+      document.body.appendChild(el);
+    }
+    el.innerHTML = "<span>" + esc(text) + '</span><a href="' + linkTo("cart") + '">View cart →</a>';
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 3500);
+  }
+
+  /* ---------- Navigation ---------- */
+  function setupNav() {
+    var btn = $(".menu-toggle"), nav = $("#site-nav");
+    if (btn && nav) {
+      btn.addEventListener("click", function () {
+        var open = nav.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      nav.addEventListener("click", function (e) {
+        if (e.target.closest("a")) { nav.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); }
+      });
+    }
+    $all("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
+  }
+
+  /* ---------- Single-file router (Google Sites version) ---------- */
+  function setupRouter() {
+    if (!SINGLE) return;
+    function show() {
+      var hash = (window.location.hash || "#home").slice(1);
+      var parts = hash.split("/");
+      var page = parts[0] || "home";
+      if (!$('[data-route-page="' + page + '"]')) page = "home";
+      $all("[data-route-page]").forEach(function (s) { s.classList.toggle("active", s.getAttribute("data-route-page") === page); });
+      $all("#site-nav a").forEach(function (a) {
+        if (a.getAttribute("href") === "#" + page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      });
+      if (page === "product") renderProduct(decodeURIComponent(parts[1] || ""));
+      if (page === "cart") renderCart();
+      var titles = { home: "LumiWear | Clothing that glows", shop: "Shop | LumiWear", cart: "Your cart | LumiWear", about: "About | LumiWear", faq: "FAQ | LumiWear", contact: "Contact | LumiWear", shipping: "Shipping & Returns | LumiWear", privacy: "Privacy Policy | LumiWear", terms: "Terms & Conditions | LumiWear" };
+      if (titles[page]) document.title = titles[page];
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener("hashchange", show);
+    show();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    setupNav();
+    updateCartCount();
+    renderHeroArt();
+    renderFeatured();
+    renderShop();
+    if (!SINGLE) { renderProduct(); renderCart(); }
+    setupOrderForm();
+    handleThanks();
+    setupRouter();
+  });
+  window.addEventListener("storage", function (e) {
+    if (e.key === SETTINGS.storageKey) { updateCartCount(); renderCart(); }
+  });
+})();
+
+</script>
+</body>
+</html>

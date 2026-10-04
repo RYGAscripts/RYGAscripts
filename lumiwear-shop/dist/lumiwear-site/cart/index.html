@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your cart | LumiWear</title>
+<meta name="description" content="Review your LumiWear cart and place your order.">
+<meta name="theme-color" content="#0e0c18">
+<meta name="robots" content="noindex"><link rel="canonical" href="https://lumiwearshop.netlify.app/cart/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="LumiWear">
+<meta property="og:title" content="Your cart | LumiWear"><meta property="og:description" content="Review your LumiWear cart and place your order."><meta property="og:url" content="https://lumiwearshop.netlify.app/cart/">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-base="../">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap header-inner">
+<a class="logo" href="../" aria-label="LumiWear home"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
+<button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<nav class="nav" id="site-nav" aria-label="Main"><a href="../">Home</a><a href="../shop/">Shop</a><a href="../about/">About</a><a href="../faq/">FAQ</a><a href="../contact/">Contact</a>
+<a class="cart-link" href="../cart/" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cart-count" data-cart-count data-empty="true">0</span></a>
+</nav></div></header>
+<main id="main">
+<div class="wrap" data-cart><div class="page-head"><h1>Your cart</h1></div>
+<div class="panel empty-state hidden" data-cart-empty><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><h2>Your cart is empty</h2>
+<p class="muted">Looks like you haven't added anything yet.</p><a class="btn btn-primary" href="../shop/">Start shopping</a></div>
+<div class="cart-layout hidden" data-cart-layout>
+<div><div class="panel" data-cart-items></div><p style="margin-top:16px"><a href="../shop/">← Continue shopping</a></p></div>
+<div><div class="panel"><h2 style="font-size:1.3rem">Order summary</h2><div data-cart-summary></div></div>
+<div class="panel" style="margin-top:16px"><h2 style="font-size:1.3rem">Checkout</h2>
+<p class="muted" style="font-size:.95rem">Fill in your details and place your order. We'll email you within 24 hours to confirm and send a secure payment link (iDEAL, card, PayPal or bank transfer).</p>
+<form name="order" method="POST" action="../thank-you/order/" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="order"><p class="hidden"><label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p><div>
+<input type="hidden" name="order-items"><input type="hidden" name="order-total">
+<div class="field"><label for="o-name">Full name</label><input id="o-name" name="name" autocomplete="name" required></div>
+<div class="field"><label for="o-email">Email</label><input id="o-email" type="email" name="email" autocomplete="email" required></div>
+<div class="field"><label for="o-address">Street and house number</label><input id="o-address" name="address" autocomplete="street-address" required></div>
+<div class="field-row"><div class="field"><label for="o-zip">Postal code</label><input id="o-zip" name="postal-code" autocomplete="postal-code" required></div>
+<div class="field"><label for="o-city">City</label><input id="o-city" name="city" autocomplete="address-level2" required></div></div>
+<div class="field"><label for="o-country">Country</label><select id="o-country" name="country" autocomplete="country-name" style="width:100%">
+<option>Netherlands</option><option>Belgium</option><option>Germany</option><option>France</option><option>Luxembourg</option><option>Austria</option><option>Spain</option><option>Italy</option><option>Other EU country</option></select></div>
+<div class="field"><label for="o-note">Note (optional)</label><textarea id="o-note" name="note" style="min-height:80px" placeholder="Anything we should know about your order?"></textarea></div>
+<div class="field"><label style="display:flex;gap:10px;align-items:start;font-weight:400"><input type="checkbox" name="terms" value="accepted" required style="width:auto;margin-top:5px">
+<span>I agree to the <a href="../terms/">Terms &amp; Conditions</a> and <a href="../privacy/">Privacy Policy</a>.</span></label></div>
+<button class="btn btn-primary btn-block" type="submit">Place order</button>
+</div></form></div></div></div></div>
+</main>
+<footer class="site-footer"><div class="wrap">
+<div class="footer-grid">
+<div class="footer-brand"><a class="logo" href="../"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
+<p>Comfortable everyday clothing with glow-in-the-dark details. Made from organic and recycled materials.</p></div>
+<div><h4>Shop</h4><ul><li><a href="../shop/">All products</a></li><li><a href="../shop/?cat=hoodies">Hoodies &amp; Sweaters</a></li><li><a href="../shop/?cat=tops">T-shirts</a></li><li><a href="../cart/">Your cart</a></li></ul></div>
+<div><h4>Help</h4><ul><li><a href="../faq/">FAQ &amp; size guide</a></li><li><a href="../shipping-returns/">Shipping &amp; Returns</a></li><li><a href="../contact/">Contact us</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="../about/">About LumiWear</a></li><li><a href="../privacy/">Privacy Policy</a></li><li><a href="../terms/">Terms &amp; Conditions</a></li></ul></div>
+</div>
+<div class="footer-bottom"><span>© <span data-year>2026</span> LumiWear. All rights reserved.</span>
+<span class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Secure payment link sent by email after every order</span></div>
+</div></footer>
+<script src="../assets/app.js"></script>
+</body>
+</html>

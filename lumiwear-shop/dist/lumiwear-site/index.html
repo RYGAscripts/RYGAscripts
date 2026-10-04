@@ -1,84 +1,141 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LumiWear | Clothing that glows</title>
-<meta name="description" content="Comfortable everyday clothing with glow-in-the-dark details. Hoodies, tees, joggers and accessories made from organic and recycled materials.">
-<meta name="theme-color" content="#0e0c18">
-<link rel="canonical" href="https://lumiwearshop.netlify.app/">
-<meta property="og:type" content="website"><meta property="og:site_name" content="LumiWear">
-<meta property="og:title" content="LumiWear | Clothing that glows"><meta property="og:description" content="Comfortable everyday clothing with glow-in-the-dark details. Hoodies, tees, joggers and accessories made from organic and recycled materials."><meta property="og:url" content="https://lumiwearshop.netlify.app/">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LumiWear</title>
+  <meta name="description" content="Sustainable activewear designed to make you visible after dark.">
+  <meta name="theme-color" content="#f1e35b">
+  <link rel="canonical" href="https://lumiwearshop.netlify.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LumiWear">
+  <meta property="og:title" content="LumiWear">
+  <meta property="og:description" content="Sustainable activewear designed to make you visible after dark.">
+  <meta property="og:image" content="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/4234068e-24aa-4485-9b89-bc9d77e81f00/Corredora+nocturna+al+passeig+mar%C3%ADtim.png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500&amp;family=Nunito+Sans:wght@400;700&amp;display=swap">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/data.js" defer></script>
+  <script src="/assets/app.js" defer></script>
 </head>
-<body data-base="">
-<a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header"><div class="wrap header-inner">
-<a class="logo" href="./" aria-label="LumiWear home"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
-<button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-<nav class="nav" id="site-nav" aria-label="Main"><a href="./" aria-current="page">Home</a><a href="shop/">Shop</a><a href="about/">About</a><a href="faq/">FAQ</a><a href="contact/">Contact</a>
-<a class="cart-link" href="cart/" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cart-count" data-cart-count data-empty="true">0</span></a>
-</nav></div></header>
-<main id="main">
-<section class="hero"><div class="wrap hero-grid">
-<div><span class="eyebrow">New collection · Autumn 2026</span>
-<h1>Clothing that <span class="glow-text">glows</span> after dark.</h1>
-<p class="lead">Soft, comfortable everyday pieces with glow-in-the-dark details that charge in daylight and shine at night. Made from organic and recycled materials.</p>
-<div class="hero-actions"><a class="btn btn-primary" href="shop/">Shop the collection</a><a class="btn btn-ghost" href="about/">Our story</a></div></div>
-<div class="hero-art" data-hero-art></div>
-</div></section>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+<header class="hdr">
+  <a class="hdr-title" href="/">LumiWear</a>
+  <nav class="hdr-nav" aria-label="Main"><a href="/" data-nav="home" aria-current="page">Home</a><a href="/shop/" data-nav="shop">Shop</a><a href="/cases/" data-nav="cases">Cases</a><a href="/blog/" data-nav="blog">Blog</a><a href="/about/" data-nav="about">About</a><a href="/contact/" data-nav="contact">Contact</a><a href="/cart/" data-nav="cart" data-cart-link>Cart</a></nav>
+  <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><span></span><span></span><span></span></button>
+</header>
+<div class="mnav" id="mnav" hidden><nav aria-label="Mobile"><a href="/" data-nav="home" aria-current="page">Home</a><a href="/shop/" data-nav="shop">Shop</a><a href="/cases/" data-nav="cases">Cases</a><a href="/blog/" data-nav="blog">Blog</a><a href="/about/" data-nav="about">About</a><a href="/contact/" data-nav="contact">Contact</a><a href="/cart/" data-nav="cart" data-cart-link>Cart</a></nav></div>
+  <main id="main">
+    <section class="sec bg-y first" style="min-height:calc(1023 * var(--px))">
+      <div class="fe">
+        <div class="sub" style="grid-column:1 / span 12;margin-top:calc(286 * var(--px))">
+          <div>
+            <h1>When the sun goes down</h1>
+            <h2>Your style lights up.</h2>
+          </div>
+          <p class="lg" style="grid-column:1 / span 8;margin-top:calc(32 * var(--px))">Sustainable activewear designed to make you visible after dark.</p>
+          <a class="btn btn-n btn-lg" style="grid-column:1 / span 5;margin-top:calc(40 * var(--px))" href="/shop/">SHOP NOW</a>
+        </div>
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/4234068e-24aa-4485-9b89-bc9d77e81f00/Corredora+nocturna+al+passeig+mar%C3%ADtim.png" alt="Runner wearing LumiWear on a seaside promenade at night" style="grid-column:14 / span 11;margin-top:calc(127 * var(--px));aspect-ratio:594 / 857;object-position:77% 13%" decoding="async" fetchpriority="high">
+      </div>
+    </section>
 
-<section class="section-sm"><div class="wrap features">
-<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><h3>Free shipping over €50</h3><p>Orders under €50 ship for just €4.95. Tracked delivery on every order.</p></div>
-<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></div><h3>30-day returns</h3><p>Not the right fit? Return unworn items within 30 days for a full refund.</p></div>
-<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19 14 10"/></svg></div><h3>Better materials</h3><p>Organic cotton and recycled fibres, chosen to last wash after wash.</p></div>
-<div class="feature"><div class="icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2Q12 12 22 12Q12 12 12 22Q12 12 2 12Q12 12 12 2Z"/></svg></div><h3>Glows for hours</h3><p>Our prints charge in daylight or lamplight and glow softly in the dark.</p></div>
-</div></section>
+    <section class="sec bg-c" style="min-height:calc(779 * var(--px));padding-top:calc(87 * var(--px))">
+      <h2 class="tc">Featured Gear</h2>
+      <div class="fe" style="margin-top:calc(78 * var(--px))">
+        <div class="pblock" style="grid-column:2 / span 22">
+          <div class="pc" data-buy>
+            <a class="pc-imgl" href="/shop/p/racerback-sports-bra/" tabindex="-1" aria-hidden="true"><img class="fit pc-img" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661287.975733-KBYBCJBWRGCLKHIBYLUP/imgg-gg3p-BCBTN-ecfbed67.png" alt="Racerback Sports Bra" loading="lazy" decoding="async"></a>
+            <a class="pc-name" href="/shop/p/racerback-sports-bra/">Racerback Sports Bra</a>
+            <div class="pc-price">PLN 38.00</div>
+            <div class="pc-buy"><div class="qty"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantity"><button type="button" data-step="1" aria-label="Increase quantity">+</button></div><button class="btn btn-y" type="button" data-add="racerback-sports-bra">ADD TO CART</button></div>
+          </div>
+          <div class="pc" data-buy>
+            <a class="pc-imgl" href="/shop/p/performance-vest/" tabindex="-1" aria-hidden="true"><img class="fit pc-img" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661028.990235-YYBNVABSAHEVZLFESEAQ/imgg-gg3p-BCBTL-b4e6b1ba.png" alt="Performance Vest" loading="lazy" decoding="async"></a>
+            <a class="pc-name" href="/shop/p/performance-vest/">Performance Vest</a>
+            <div class="pc-price">PLN 79.00</div>
+            <div class="pc-buy"><div class="qty"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantity"><button type="button" data-step="1" aria-label="Increase quantity">+</button></div><button class="btn btn-y" type="button" data-add="performance-vest">ADD TO CART</button></div>
+          </div>
+          <div class="pc" data-buy>
+            <a class="pc-imgl" href="/shop/p/running-shorts/" tabindex="-1" aria-hidden="true"><img class="fit pc-img" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/0684e8e5-6812-4512-972f-952e08726f02/ChatGPT+Image+2+oct+2026%2C+17_39_51.png" alt="Running Shorts" loading="lazy" decoding="async"></a>
+            <a class="pc-name" href="/shop/p/running-shorts/">Running Shorts</a>
+            <div class="pc-price">PLN 38.00</div>
+            <div class="pc-buy"><div class="qty"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantity"><button type="button" data-step="1" aria-label="Increase quantity">+</button></div><button class="btn btn-y" type="button" data-add="running-shorts">ADD TO CART</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<section class="section"><div class="wrap">
-<div class="section-head"><div><span class="eyebrow">Most loved</span><h2>Featured pieces</h2></div><a class="btn btn-ghost" href="shop/">View all products →</a></div>
-<div class="grid" data-featured></div>
-</div></section>
+    <section class="sec bg-y" style="min-height:calc(965 * var(--px))">
+      <div class="fe">
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661933.51062-HBUZQLQJSXWIIQZYAGKU/imgg-gg3p-BCBTS-8700b6da.png" alt="Training in LumiWear activewear" style="grid-column:1 / span 12;margin-top:calc(39.5 * var(--px));aspect-ratio:649 / 886" loading="lazy" decoding="async">
+        <div class="sub" style="grid-column:15 / span 8;margin-top:calc(200 * var(--px))">
+          <h1>Train Anywhere, Anytime</h1>
+          <p style="margin-top:calc(32 * var(--px))">From sunrise sessions to late-night runs, our gear keeps you comfortable, dry and seen — on the track, in the park or on city streets.</p>
+          <a class="btn btn-n btn-lg" style="margin-top:calc(40 * var(--px))" href="/cases/">FIND YOUR GEAR</a>
+        </div>
+      </div>
+    </section>
 
-<section class="section"><div class="wrap story">
-<div class="story-art"><svg viewBox="0 0 400 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="sky" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#2b2456"/><stop offset="1" stop-color="#0e0c18"/></radialGradient>
-<filter id="sg"><feGaussianBlur stdDeviation="4"/></filter></defs>
-<rect width="400" height="300" fill="url(#sky)"/>
-<circle cx="310" cy="70" r="30" fill="#f3f1fa" opacity=".9"/><circle cx="322" cy="62" r="28" fill="#211c45"/>
-<g fill="#f3f1fa"><circle cx="60" cy="50" r="1.6"/><circle cx="120" cy="90" r="1.2"/><circle cx="200" cy="40" r="1.8"/><circle cx="250" cy="120" r="1.1"/><circle cx="90" cy="140" r="1.3"/><circle cx="360" cy="150" r="1.5"/><circle cx="170" cy="130" r="1"/></g>
-<path d="M0 230 Q100 190 200 220 T400 210 V300 H0Z" fill="#17142c"/>
-<path d="M0 255 Q120 230 230 250 T400 245 V300 H0Z" fill="#1d1938"/>
-<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6" filter="url(#sg)"/>
-<path d="M200 120 Q200 160 240 160 Q200 160 200 200 Q200 160 160 160 Q200 160 200 120Z" fill="#7cf5d6"/>
-</svg></div>
-<div><span class="eyebrow">Why LumiWear</span><h2>Made for the moments <span class="glow-text">after sunset</span></h2>
-<p class="muted">LumiWear started with a simple idea: clothes you love wearing during the day shouldn't fade into the background at night. Every piece carries a small glowing star — a quiet detail that lights up on evening walks, at concerts and on the way home.</p>
-<p class="muted">We keep our collection small and focused, so every item gets the attention it deserves — from fabric choice to the final stitch.</p>
-<a class="btn btn-ghost" href="about/">Read our story</a></div>
-</div></section>
-<section class="section"><div class="wrap"><div class="band">
-<span class="eyebrow">Newsletter</span><h2>Be the first to <span class="glow-text">see new drops</span></h2>
-<p>Get new collections, restocks and subscriber-only offers in your inbox. No spam — unsubscribe any time.</p>
-<form name="newsletter" method="POST" action="thank-you/newsletter/" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="newsletter"><p class="hidden"><label>Leave this empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p><div class="inline-form">
-<label class="hidden" for="nl-email-139778579900112">Email address</label>
-<input id="nl-email-139778579900112" type="email" name="email" placeholder="Your email address" autocomplete="email" required>
-<button class="btn btn-primary" type="submit">Subscribe</button></div></form>
-</div></div></section>
-</main>
-<footer class="site-footer"><div class="wrap">
-<div class="footer-grid">
-<div class="footer-brand"><a class="logo" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5d6"/><stop offset=".55" stop-color="#b48cff"/><stop offset="1" stop-color="#ff8ad8"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#lg)"/><path d="M16 6 Q16 16 26 16 Q16 16 16 26 Q16 16 6 16 Q16 16 16 6Z" fill="#120f22"/></svg><span>Lumi<span class="glow-text">Wear</span></span></a>
-<p>Comfortable everyday clothing with glow-in-the-dark details. Made from organic and recycled materials.</p></div>
-<div><h4>Shop</h4><ul><li><a href="shop/">All products</a></li><li><a href="shop/?cat=hoodies">Hoodies &amp; Sweaters</a></li><li><a href="shop/?cat=tops">T-shirts</a></li><li><a href="cart/">Your cart</a></li></ul></div>
-<div><h4>Help</h4><ul><li><a href="faq/">FAQ &amp; size guide</a></li><li><a href="shipping-returns/">Shipping &amp; Returns</a></li><li><a href="contact/">Contact us</a></li></ul></div>
-<div><h4>Company</h4><ul><li><a href="about/">About LumiWear</a></li><li><a href="privacy/">Privacy Policy</a></li><li><a href="terms/">Terms &amp; Conditions</a></li></ul></div>
-</div>
-<div class="footer-bottom"><span>© <span data-year>2026</span> LumiWear. All rights reserved.</span>
-<span class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Secure payment link sent by email after every order</span></div>
-</div></footer>
-<script src="assets/app.js"></script>
+    <section class="sec bg-c vc" style="min-height:calc(1012 * var(--px))">
+      <div class="fe">
+        <div class="sub" style="grid-column:1 / span 12">
+          <h1>Why We Sew, Stretch, and Smile</h1>
+          <p style="grid-column:1 / span 10;margin-top:calc(32 * var(--px))">We design gear that feels like a second skin, so you stay focused on the workout—not your wardrobe.</p>
+          <a class="btn btn-y btn-lg" style="grid-column:1 / span 5;margin-top:calc(40 * var(--px))" href="/about/">LEARN MORE</a>
+          <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786662186.111515-GDRMGPGRRVDPYUAJBMSR/imgg-gg3p-BCBTW-06bca7ca.png" alt="" style="margin-top:calc(40 * var(--px));aspect-ratio:649 / 344" loading="lazy" decoding="async">
+        </div>
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661678.332641-EDQLCSYLKSSSVAJTUUII/imgg-gg3p-BCBTQ-a5fb74bd.png" alt="" style="grid-column:17 / span 8;aspect-ratio:429 / 617" loading="lazy" decoding="async">
+      </div>
+    </section>
+
+    <section class="sec bg-c vc" style="min-height:calc(778 * var(--px))">
+      <h2 class="tc">Let’s Get Social—Join the Movement</h2>
+      <p class="tc hashtag">Share your after-dark workouts with <strong>#LumiWearAfterDark</strong></p>
+      
+      <div class="fe quad" style="margin-top:calc(48 * var(--px))">
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786662059.384072-CHTGVODFMVWAASVYUHUI/imgg-gg3p-BCBTU-d129a9d7.png" alt="" style="grid-column:1 / span 6;aspect-ratio:319 / 423" loading="lazy" decoding="async">
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661806.419092-XMPIOLZPLSVIXVQXJLZI/imgg-gg3p-BCBTS-73333b2f.png" alt="" style="grid-column:7 / span 6;aspect-ratio:319 / 423" loading="lazy" decoding="async">
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661806.644342-XNZULQNMYTYQUYLXCVNW/imgg-gg3p-BCBTS-914e1bc3.png" alt="" style="grid-column:13 / span 6;aspect-ratio:319 / 423" loading="lazy" decoding="async">
+        <img class="fit" src="https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661548.856841-SBCVCGXKZPQTNAOQNZOL/imgg-gg3p-BCBTO-c6d95567.png" alt="" style="grid-column:19 / span 6;aspect-ratio:319 / 423" loading="lazy" decoding="async">
+      </div>
+    </section>
+
+    <section class="sec bg-y vc" style="min-height:calc(782 * var(--px))">
+      <h1 class="tc">Have Questions?</h1>
+      <p class="tc" style="margin-top:calc(24 * var(--px))">Tell us what you need and we’ll reach out with friendly, helpful answers.</p>
+      <div class="fe" style="margin-top:calc(48 * var(--px))">
+        <div style="grid-column:7 / span 12">
+        <form class="form form-c" name="contact" method="POST" action="/thank-you/message/" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="form-name" value="contact"><label class="hp" aria-hidden="true">Leave empty <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+        <div class="f-row">
+          <label class="fld"><span class="fld-l fld-s">First Name <small>(required)</small></span><input type="text" name="fname" autocomplete="given-name" required></label>
+          <label class="fld"><span class="fld-l fld-s">Last Name <small>(required)</small></span><input type="text" name="lname" autocomplete="family-name" required></label>
+        </div>
+        <label class="fld"><span class="fld-l">Email <small>(required)</small></span><input type="email" name="email" autocomplete="email" required></label>
+        <label class="fld"><span class="fld-l">Message <small>(required)</small></span><textarea name="message" required></textarea></label>
+        <button class="btn btn-n btn-f" type="submit">SEND</button>
+      </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="sec bg-c vc ftr" style="min-height:calc(305 * var(--px))">
+  <div class="fe">
+    <div style="grid-column:1 / span 12">
+      <h2>LumiWear</h2>
+      <p class="ftr-made">Sustainable activewear designed to make you visible after dark.</p>
+      <div class="ftr-links"><a href="/shop/">Shop</a><a href="/blog/">Blog</a><a href="/shipping-returns/">Shipping &amp; Returns</a><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Conditions</a></div>
+    </div>
+    <div class="tr" style="grid-column:13 / span 12">
+      <h2><a class="ftr-mail" href="/contact/">Get in touch →</a></h2>
+      <p class="ftr-made">We reply within 1–2 working days.</p>
+      
+    </div>
+  </div>
+  <div class="ftr-bottom"><span>© <span data-year>2026</span> LumiWear. All rights reserved.</span><span>Secure payment link sent by email with every order</span></div>
+</footer>
 </body>
 </html>

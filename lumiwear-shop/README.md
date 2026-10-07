@@ -36,7 +36,7 @@ Choose **Insert → Embed → Embed code**, then paste either:
 
 ## Products
 
-There are 9 products: the 3 from the original site plus 6 new ones (jacket, leggings, long-sleeve top, cap, socks and run belt). For now the new products reuse the photos of the original 3. When you have their own photos, change the product's `"image"` in `build.py` to the photo's link.
+There are 9 products: the 3 from the original site plus 6 new ones (jacket, leggings, long-sleeve top, cap, socks and run belt). The photos of the new products are in `src/products/`. To swap one, replace its file there (same name), run `python3 build.py` and upload the new zip.
 
 ## Changing things
 

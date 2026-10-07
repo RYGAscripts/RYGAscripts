@@ -56,7 +56,7 @@ window.LUMIWEAR = {
         "L",
         "XL"
       ],
-      "image": "/assets/products/reflective-running-jacket.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661028.990235-YYBNVABSAHEVZLFESEAQ/imgg-gg3p-BCBTL-b4e6b1ba.png"
     },
     "high-waist-leggings": {
       "name": "High-Waist Leggings",
@@ -69,7 +69,7 @@ window.LUMIWEAR = {
         "L",
         "XL"
       ],
-      "image": "/assets/products/high-waist-leggings.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661287.975733-KBYBCJBWRGCLKHIBYLUP/imgg-gg3p-BCBTN-ecfbed67.png"
     },
     "long-sleeve-running-top": {
       "name": "Long Sleeve Running Top",
@@ -82,14 +82,14 @@ window.LUMIWEAR = {
         "L",
         "XL"
       ],
-      "image": "/assets/products/long-sleeve-running-top.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661028.990235-YYBNVABSAHEVZLFESEAQ/imgg-gg3p-BCBTL-b4e6b1ba.png"
     },
     "reflective-running-cap": {
       "name": "Reflective Running Cap",
       "price": 29.0,
       "url": "/shop/p/reflective-running-cap/",
       "sizes": [],
-      "image": "/assets/products/reflective-running-cap.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/0684e8e5-6812-4512-972f-952e08726f02/ChatGPT+Image+2+oct+2026%2C+17_39_51.png"
     },
     "running-socks-2-pack": {
       "name": "Running Socks (2-Pack)",
@@ -100,14 +100,14 @@ window.LUMIWEAR = {
         "39–42",
         "43–46"
       ],
-      "image": "/assets/products/running-socks-2-pack.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/0684e8e5-6812-4512-972f-952e08726f02/ChatGPT+Image+2+oct+2026%2C+17_39_51.png"
     },
     "night-run-belt": {
       "name": "Night Run Belt",
       "price": 35.0,
       "url": "/shop/p/night-run-belt/",
       "sizes": [],
-      "image": "/assets/products/night-run-belt.svg"
+      "image": "https://images.squarespace-cdn.com/content/v1/6aba28076d38280a11bee9c9/1786661287.975733-KBYBCJBWRGCLKHIBYLUP/imgg-gg3p-BCBTN-ecfbed67.png"
     }
   }
 };

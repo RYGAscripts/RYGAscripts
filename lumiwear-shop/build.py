@@ -15,8 +15,6 @@ import os
 import shutil
 import zipfile
 
-from product_art import ART
-
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, "src")
 DIST = os.path.join(ROOT, "dist")
@@ -61,13 +59,16 @@ def focus(key):
 
 # ------------------------------------------------------------------ products
 SIZES = ["XS", "S", "M", "L", "XL"]
+PHOTO_BRA = CDN + "1786661287.975733-KBYBCJBWRGCLKHIBYLUP/imgg-gg3p-BCBTN-ecfbed67.png"
+PHOTO_VEST = CDN + "1786661028.990235-YYBNVABSAHEVZLFESEAQ/imgg-gg3p-BCBTL-b4e6b1ba.png"
+PHOTO_SHORTS = CDN + "0684e8e5-6812-4512-972f-952e08726f02/ChatGPT+Image+2+oct+2026%2C+17_39_51.png"
 PRODUCTS = [
     {
         "id": "racerback-sports-bra",
         "old": "product-2-5c6mb-j8mng-zsl73-srtpj-c3khp",
         "name": "Racerback Sports Bra",
         "price": 38.00,
-        "image": CDN + "1786661287.975733-KBYBCJBWRGCLKHIBYLUP/imgg-gg3p-BCBTN-ecfbed67.png",
+        "image": PHOTO_BRA,
         "short": "Medium-support racerback bra with reflective trim.",
         "description": "A medium-support sports bra with a racerback that moves with you. Soft, sweat-wicking recycled fabric keeps you dry, and reflective trim catches the light on early-morning and late-evening runs.",
         "features": ["Recycled polyester and elastane blend", "Medium support for running, cycling and gym", "Racerback design for full freedom of movement", "Reflective trim for visibility after dark", "Removable pads"],
@@ -78,7 +79,7 @@ PRODUCTS = [
         "old": "product-3-szb2y-gzh2r-tzhkx-b6hhj-ebzcf",
         "name": "Performance Vest",
         "price": 79.00,
-        "image": CDN + "1786661028.990235-YYBNVABSAHEVZLFESEAQ/imgg-gg3p-BCBTL-b4e6b1ba.png",
+        "image": PHOTO_VEST,
         "short": "Lightweight running vest with reflective panels.",
         "description": "Our lightweight, breathable vest is built for training after dark. Reflective panels on the front and back make you visible from every angle, while the zip pocket keeps your keys and phone secure.",
         "features": ["Lightweight, breathable recycled fabric", "Reflective panels front and back", "Secure zip pocket for phone and keys", "Wind-resistant front", "Layers easily over a T-shirt or long sleeve"],
@@ -89,7 +90,7 @@ PRODUCTS = [
         "old": "product-4-9e76d-pr6ls-ddx8r-2y3l7-mygzt",
         "name": "Running Shorts",
         "price": 38.00,
-        "image": CDN + "0684e8e5-6812-4512-972f-952e08726f02/ChatGPT+Image+2+oct+2026%2C+17_39_51.png",
+        "image": PHOTO_SHORTS,
         "short": "Light, quick-drying shorts with reflective details.",
         "description": "Light, quick-drying running shorts with a comfortable elastic waistband and built-in liner. Reflective details on the sides keep you seen when the sun goes down.",
         "features": ["Quick-drying recycled polyester", "Elastic waistband with drawcord", "Built-in liner", "Back zip pocket", "Reflective side details"],
@@ -99,7 +100,7 @@ PRODUCTS = [
         "id": "reflective-running-jacket",
         "name": "Reflective Running Jacket",
         "price": 149.00,
-        "image": "/assets/products/reflective-running-jacket.svg",
+        "image": PHOTO_VEST,
         "short": "Light, water-resistant jacket with a reflective chest band.",
         "description": "A lightweight, water-resistant running jacket for cold and rainy evenings. The reflective chest band, cuffs and hood trim light up in headlights, and the packable design folds into its own pocket.",
         "features": ["Water-resistant recycled shell", "Reflective chest band, cuffs and hood trim", "Full-length zip and two zip pockets", "Packs into its own pocket", "Breathable mesh back panel"],
@@ -109,7 +110,7 @@ PRODUCTS = [
         "id": "high-waist-leggings",
         "name": "High-Waist Leggings",
         "price": 59.00,
-        "image": "/assets/products/high-waist-leggings.svg",
+        "image": PHOTO_BRA,
         "short": "Squat-proof leggings with reflective side stripes.",
         "description": "Soft, squat-proof leggings with a high, supportive waistband that stays in place. Reflective stripes run down both legs, so every stride is visible after dark.",
         "features": ["Recycled nylon and elastane blend", "High waistband with hidden key pocket", "Reflective stripes along both legs", "Squat-proof, four-way stretch fabric", "Full length"],
@@ -119,7 +120,7 @@ PRODUCTS = [
         "id": "long-sleeve-running-top",
         "name": "Long Sleeve Running Top",
         "price": 49.00,
-        "image": "/assets/products/long-sleeve-running-top.svg",
+        "image": PHOTO_VEST,
         "short": "Breathable long sleeve with a reflective diagonal stripe.",
         "description": "A breathable long-sleeve top for cooler runs. Quick-drying fabric keeps you comfortable, and the reflective diagonal stripe across the front makes you easy to spot.",
         "features": ["Quick-drying recycled polyester", "Reflective diagonal stripe", "Flatlock seams to prevent chafing", "Thumbholes to keep hands warm", "Slim, comfortable fit"],
@@ -129,7 +130,7 @@ PRODUCTS = [
         "id": "reflective-running-cap",
         "name": "Reflective Running Cap",
         "price": 29.00,
-        "image": "/assets/products/reflective-running-cap.svg",
+        "image": PHOTO_SHORTS,
         "short": "Lightweight cap with reflective front and brim.",
         "description": "A lightweight running cap that keeps rain and sweat out of your eyes. The reflective front panel and brim trim help others see you on dark streets.",
         "features": ["Lightweight, quick-drying fabric", "Reflective front panel and brim trim", "Sweat-wicking inner band", "Adjustable strap", "One size fits most"],
@@ -139,7 +140,7 @@ PRODUCTS = [
         "id": "running-socks-2-pack",
         "name": "Running Socks (2-Pack)",
         "price": 25.00,
-        "image": "/assets/products/running-socks-2-pack.svg",
+        "image": PHOTO_SHORTS,
         "short": "Cushioned ankle socks with a reflective cuff.",
         "description": "Two pairs of cushioned running socks with arch support and a reflective band at the cuff. Breathable mesh panels keep your feet cool and dry.",
         "features": ["Recycled polyamide blend", "Cushioned heel and toe", "Arch support", "Reflective cuff band", "2 pairs per pack"],
@@ -149,7 +150,7 @@ PRODUCTS = [
         "id": "night-run-belt",
         "name": "Night Run Belt",
         "price": 35.00,
-        "image": "/assets/products/night-run-belt.svg",
+        "image": PHOTO_BRA,
         "short": "Bounce-free running belt with a reflective stripe.",
         "description": "Carry your phone, keys and cards without the bounce. The slim, stretchy pouch fits most phones, and the reflective stripe adds extra visibility around your waist.",
         "features": ["Fits phones up to 6.9\"", "Water-resistant zip pouch", "Adjustable, bounce-free strap", "Reflective stripe", "One size fits most"],
@@ -727,10 +728,6 @@ def build_site():
         f.write(data_js())
     with open(os.path.join(SITE, "favicon.svg"), "w", encoding="utf-8") as f:
         f.write(FAVICON)
-    os.makedirs(os.path.join(SITE, "assets", "products"))
-    for pid, draw in ART.items():
-        with open(os.path.join(SITE, "assets", "products", pid + ".svg"), "w", encoding="utf-8") as f:
-            f.write(draw())
 
     ctx = Ctx()
     for path, key, title, desc, fn in PAGES:

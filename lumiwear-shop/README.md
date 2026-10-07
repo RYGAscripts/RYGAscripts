@@ -36,7 +36,7 @@ Choose **Insert → Embed → Embed code**, then paste either:
 
 ## Products
 
-There are 9 products: the 3 from the original site, which use your Squarespace photos, plus 6 new ones (jacket, leggings, long-sleeve top, cap, socks and run belt). The new products use drawn pictures from `product_art.py`. To use a real photo instead, change the product's `"image"` in `build.py` to the photo's link.
+There are 9 products: the 3 from the original site plus 6 new ones (jacket, leggings, long-sleeve top, cap, socks and run belt). For now the new products reuse the photos of the original 3. When you have their own photos, change the product's `"image"` in `build.py` to the photo's link.
 
 ## Changing things
 

@@ -15,6 +15,8 @@ import os
 import shutil
 import zipfile
 
+from product_art import ART
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, "src")
 DIST = os.path.join(ROOT, "dist")
@@ -48,6 +50,14 @@ IMG = {
     "s3": CDN + "1786661806.644342-XNZULQNMYTYQUYLXCVNW/imgg-gg3p-BCBTS-914e1bc3.png",
     "s4": CDN + "1786661548.856841-SBCVCGXKZPQTNAOQNZOL/imgg-gg3p-BCBTO-c6d95567.png",
 }
+
+# Where the subject is in each photo, so crops keep them centred.
+FOCUS = {"hero": "100% 25%"}
+
+
+def focus(key):
+    return f";object-position:{FOCUS[key]}" if key in FOCUS else ""
+
 
 # ------------------------------------------------------------------ products
 SIZES = ["XS", "S", "M", "L", "XL"]
@@ -84,6 +94,66 @@ PRODUCTS = [
         "description": "Light, quick-drying running shorts with a comfortable elastic waistband and built-in liner. Reflective details on the sides keep you seen when the sun goes down.",
         "features": ["Quick-drying recycled polyester", "Elastic waistband with drawcord", "Built-in liner", "Back zip pocket", "Reflective side details"],
         "sizes": SIZES,
+    },
+    {
+        "id": "reflective-running-jacket",
+        "name": "Reflective Running Jacket",
+        "price": 149.00,
+        "image": "/assets/products/reflective-running-jacket.svg",
+        "short": "Light, water-resistant jacket with a reflective chest band.",
+        "description": "A lightweight, water-resistant running jacket for cold and rainy evenings. The reflective chest band, cuffs and hood trim light up in headlights, and the packable design folds into its own pocket.",
+        "features": ["Water-resistant recycled shell", "Reflective chest band, cuffs and hood trim", "Full-length zip and two zip pockets", "Packs into its own pocket", "Breathable mesh back panel"],
+        "sizes": SIZES,
+    },
+    {
+        "id": "high-waist-leggings",
+        "name": "High-Waist Leggings",
+        "price": 59.00,
+        "image": "/assets/products/high-waist-leggings.svg",
+        "short": "Squat-proof leggings with reflective side stripes.",
+        "description": "Soft, squat-proof leggings with a high, supportive waistband that stays in place. Reflective stripes run down both legs, so every stride is visible after dark.",
+        "features": ["Recycled nylon and elastane blend", "High waistband with hidden key pocket", "Reflective stripes along both legs", "Squat-proof, four-way stretch fabric", "Full length"],
+        "sizes": SIZES,
+    },
+    {
+        "id": "long-sleeve-running-top",
+        "name": "Long Sleeve Running Top",
+        "price": 49.00,
+        "image": "/assets/products/long-sleeve-running-top.svg",
+        "short": "Breathable long sleeve with a reflective diagonal stripe.",
+        "description": "A breathable long-sleeve top for cooler runs. Quick-drying fabric keeps you comfortable, and the reflective diagonal stripe across the front makes you easy to spot.",
+        "features": ["Quick-drying recycled polyester", "Reflective diagonal stripe", "Flatlock seams to prevent chafing", "Thumbholes to keep hands warm", "Slim, comfortable fit"],
+        "sizes": SIZES,
+    },
+    {
+        "id": "reflective-running-cap",
+        "name": "Reflective Running Cap",
+        "price": 29.00,
+        "image": "/assets/products/reflective-running-cap.svg",
+        "short": "Lightweight cap with reflective front and brim.",
+        "description": "A lightweight running cap that keeps rain and sweat out of your eyes. The reflective front panel and brim trim help others see you on dark streets.",
+        "features": ["Lightweight, quick-drying fabric", "Reflective front panel and brim trim", "Sweat-wicking inner band", "Adjustable strap", "One size fits most"],
+        "sizes": [],
+    },
+    {
+        "id": "running-socks-2-pack",
+        "name": "Running Socks (2-Pack)",
+        "price": 25.00,
+        "image": "/assets/products/running-socks-2-pack.svg",
+        "short": "Cushioned ankle socks with a reflective cuff.",
+        "description": "Two pairs of cushioned running socks with arch support and a reflective band at the cuff. Breathable mesh panels keep your feet cool and dry.",
+        "features": ["Recycled polyamide blend", "Cushioned heel and toe", "Arch support", "Reflective cuff band", "2 pairs per pack"],
+        "sizes": ["35–38", "39–42", "43–46"],
+    },
+    {
+        "id": "night-run-belt",
+        "name": "Night Run Belt",
+        "price": 35.00,
+        "image": "/assets/products/night-run-belt.svg",
+        "short": "Bounce-free running belt with a reflective stripe.",
+        "description": "Carry your phone, keys and cards without the bounce. The slim, stretchy pouch fits most phones, and the reflective stripe adds extra visibility around your waist.",
+        "features": ["Fits phones up to 6.9\"", "Water-resistant zip pouch", "Adjustable, bounce-free strap", "Reflective stripe", "One size fits most"],
+        "sizes": [],
     },
 ]
 for p in PRODUCTS:
@@ -178,6 +248,10 @@ def social(cls="social"):
     return f'<div class="{cls}">{"".join(links)}</div>' if links else ""
 
 
+def src(ctx, url):
+    return SITE_URL + url if ctx.single and url.startswith("/") else url
+
+
 def e(s):
     return html.escape(s, quote=True)
 
@@ -250,7 +324,7 @@ def footer(ctx):
 
 def product_card(ctx, p, eager=False):
     return f'''<div class="pc" data-buy>
-            <a class="pc-imgl" href="{ctx.a(p["url"])}" tabindex="-1" aria-hidden="true"><img class="fit pc-img" src="{p["image"]}" alt="{e(p["name"])}" loading="lazy" decoding="async"></a>
+            <a class="pc-imgl" href="{ctx.a(p["url"])}" tabindex="-1" aria-hidden="true"><img class="fit pc-img" src="{src(ctx, p["image"])}" alt="{e(p["name"])}" loading="lazy" decoding="async"></a>
             <a class="pc-name" href="{ctx.a(p["url"])}">{e(p["name"])}</a>
             <div class="pc-price">{money(p["price"])}</div>
             <div class="pc-buy"><div class="qty"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantity"><button type="button" data-step="1" aria-label="Increase quantity">+</button></div><button class="btn btn-y" type="button" data-add="{p["id"]}">ADD TO CART</button></div>
@@ -272,7 +346,7 @@ def contact_form(ctx, cls="form form-c"):
 # ------------------------------------------------------------------ pages
 def home(ctx):
     A = ctx.a
-    cards = "\n          ".join(product_card(ctx, p) for p in PRODUCTS)
+    cards = "\n          ".join(product_card(ctx, p) for p in PRODUCTS[:3])
     return f'''<section class="sec bg-y first" style="min-height:calc(1023 * var(--px))">
       <div class="fe">
         <div class="sub" style="grid-column:1 / span 12;margin-top:calc(286 * var(--px))">
@@ -354,18 +428,22 @@ def product_page(p):
     def fn(ctx):
         sizes = "".join(f'<button type="button" class="size" data-size="{s}" aria-pressed="false">{s}</button>' for s in p["sizes"])
         feats = "".join(f"<li>{e(f)}</li>" for f in p["features"])
-        others = "\n".join(product_card(ctx, o) for o in PRODUCTS if o["id"] != p["id"])
+        if p["sizes"]:
+            size_block = f'''<div class="opt-l">Size: <span data-size-label>Choose a size</span></div>
+    <div class="sizes" role="group" aria-label="Size">{sizes}</div>
+    <p class="muted" style="margin-top:10px;font-size:.95rem">Between sizes? We recommend sizing up for a relaxed fit. <a href="{ctx.a("/shipping-returns/")}">Free size exchanges</a>.</p>'''
+        else:
+            size_block = '<div class="opt-l">Size: <span>One size fits most</span></div>'
+        others = "\n".join(product_card(ctx, o) for o in [o for o in PRODUCTS if o["id"] != p["id"]][:3])
         return f'''<section class="sec bg-c" style="padding-top:calc(60 * var(--px))"><div class="wrap">
 <nav class="crumb" aria-label="Breadcrumb"><a href="{ctx.a("/")}">Home</a> / <a href="{ctx.a("/shop/")}">Shop</a> / {e(p["name"])}</nav>
 <div class="prod" data-product data-buy>
-  <img class="fit prod-img" src="{p["image"]}" alt="{e(p["name"])}" decoding="async">
+  <img class="fit prod-img" src="{src(ctx, p["image"])}" alt="{e(p["name"])}" decoding="async">
   <div>
     <h1>{e(p["name"])}</h1>
     <div class="prod-price">{money(p["price"])}</div>
     <p>{e(p["description"])}</p>
-    <div class="opt-l">Size: <span data-size-label>Choose a size</span></div>
-    <div class="sizes" role="group" aria-label="Size">{sizes}</div>
-    <p class="muted" style="margin-top:10px;font-size:.95rem">Between sizes? We recommend sizing up for a relaxed fit. <a href="{ctx.a("/shipping-returns/")}">Free size exchanges</a>.</p>
+    {size_block}
     <div class="buy"><div class="qty"><button type="button" data-step="-1" aria-label="Decrease quantity">−</button><input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantity"><button type="button" data-step="1" aria-label="Increase quantity">+</button></div>
     <button class="btn btn-n" type="button" data-add="{p["id"]}">ADD TO CART</button></div>
     <div data-msg aria-live="polite"></div>
@@ -379,13 +457,13 @@ def product_page(p):
 
 CASES = [
     ("Night Running", "hero", "Long evening runs along the coast or through the city. Reflective details on your torso and legs make you visible to drivers and cyclists from far away, while breathable fabrics keep you cool.",
-     ["performance-vest", "running-shorts", "racerback-sports-bra"]),
+     ["reflective-running-jacket", "performance-vest", "high-waist-leggings", "night-run-belt"]),
     ("Training Outdoors", "train", "Park workouts, bootcamps and interval sessions after work. Stretchy, sweat-wicking pieces move with every squat, sprint and lunge — and stay comfortable from warm-up to cool-down.",
-     ["racerback-sports-bra", "running-shorts"]),
+     ["racerback-sports-bra", "running-shorts", "long-sleeve-running-top", "running-socks-2-pack"]),
     ("Commuting by Bike", "why_tall", "Riding home when the days get shorter? Layer our Performance Vest over your outfit for a lightweight, wind-resistant layer with reflective panels front and back.",
-     ["performance-vest"]),
+     ["performance-vest", "reflective-running-jacket", "reflective-running-cap"]),
     ("Evening Walks", "s2", "Walking the dog, a stroll after dinner or a long hike that ends after sunset. Comfortable gear with reflective details means you can relax and enjoy the evening.",
-     ["performance-vest", "running-shorts"]),
+     ["reflective-running-jacket", "reflective-running-cap", "high-waist-leggings"]),
 ]
 
 
@@ -396,7 +474,7 @@ def cases(ctx):
         rev = " rev" if i % 2 else ""
         btns = "".join(f'<a class="btn btn-o" href="{ctx.a(p["url"])}">{e(p["name"])}</a>' for p in PRODUCTS if p["id"] in ids)
         rows += f'''<section class="sec {bg}"><div class="wrap split{rev}">
-<img class="fit" src="{IMG[img]}" alt="" style="aspect-ratio:4 / 5" loading="lazy" decoding="async">
+<img class="fit" src="{IMG[img]}" alt="" style="aspect-ratio:4 / 5{focus(img)}" loading="lazy" decoding="async">
 <div><h2>{title}</h2><p class="lg">{text}</p><p class="muted" style="margin-top:22px;font-weight:700">Recommended gear</p><div class="recs">{btns}</div></div>
 </div></section>'''
     return f'''<section class="sec bg-y page-h tc"><div class="wrap"><h1>Cases</h1>
@@ -407,7 +485,7 @@ def cases(ctx):
 
 
 def blog(ctx):
-    cards = "".join(f'''<a class="card" href="{ctx.a("/blog/" + p["id"] + "/")}"><img class="fit" src="{IMG[p["image"]]}" alt="" loading="lazy" decoding="async">
+    cards = "".join(f'''<a class="card" href="{ctx.a("/blog/" + p["id"] + "/")}"><img class="fit" src="{IMG[p["image"]]}" alt="" style="{focus(p["image"]).lstrip(";")}" loading="lazy" decoding="async">
 <span class="meta">{p["date"]}</span><h3>{e(p["title"])}</h3><p class="muted">{e(p["excerpt"])}</p><span style="font-weight:700">Read more →</span></a>''' for p in POSTS)
     return f'''<section class="sec bg-y page-h tc"><div class="wrap"><h1>Blog</h1>
 <p class="lg">Tips, stories and advice for training safely and comfortably after dark.</p></div></section>
@@ -418,10 +496,10 @@ def post_page(p):
     def fn(ctx):
         body = p["body"].format(shop=ctx.a("/shop/"), contact=ctx.a("/contact/"))
         others = [o for o in POSTS if o["id"] != p["id"]]
-        more = "".join(f'<a class="card" href="{ctx.a("/blog/" + o["id"] + "/")}"><img class="fit" src="{IMG[o["image"]]}" alt="" loading="lazy" decoding="async"><span class="meta">{o["date"]}</span><h3>{e(o["title"])}</h3></a>' for o in others)
+        more = "".join(f'<a class="card" href="{ctx.a("/blog/" + o["id"] + "/")}"><img class="fit" src="{IMG[o["image"]]}" alt="" style="{focus(o["image"]).lstrip(";")}" loading="lazy" decoding="async"><span class="meta">{o["date"]}</span><h3>{e(o["title"])}</h3></a>' for o in others)
         return f'''<section class="sec bg-y page-h"><div class="prose"><nav class="crumb" aria-label="Breadcrumb"><a href="{ctx.a("/blog/")}">← Back to Blog</a></nav>
 <h1 style="font-size:clamp(2rem,4.4vw,3.6rem)">{e(p["title"])}</h1><p class="post-meta">{p["date"]} · LumiWear</p></div></section>
-<section class="sec bg-c"><img class="fit post-img" src="{IMG[p["image"]]}" alt="" decoding="async"><article class="prose">{body}</article></section>
+<section class="sec bg-c"><img class="fit post-img" src="{IMG[p["image"]]}" alt="" style="{focus(p["image"]).lstrip(";")}" decoding="async"><article class="prose">{body}</article></section>
 <section class="sec bg-y"><div class="wrap"><h2 class="tc" style="margin-bottom:40px">More from the Blog</h2><div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">{more}</div></div></section>'''
     return fn
 
@@ -600,8 +678,9 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n  <link r
          '  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500&amp;family=Nunito+Sans:wght@400;700&amp;display=swap">')
 
 
-def data_js():
-    products = {p["id"]: {k: p[k] for k in ("name", "price", "image", "url", "sizes")} for p in PRODUCTS}
+def data_js(ctx=None):
+    ctx = ctx or Ctx()
+    products = {p["id"]: dict({k: p[k] for k in ("name", "price", "url", "sizes")}, image=src(ctx, p["image"])) for p in PRODUCTS}
     return "window.LUMIWEAR = " + json.dumps({"settings": SETTINGS, "products": products}, ensure_ascii=False, indent=2) + ";\n"
 
 
@@ -648,6 +727,10 @@ def build_site():
         f.write(data_js())
     with open(os.path.join(SITE, "favicon.svg"), "w", encoding="utf-8") as f:
         f.write(FAVICON)
+    os.makedirs(os.path.join(SITE, "assets", "products"))
+    for pid, draw in ART.items():
+        with open(os.path.join(SITE, "assets", "products", pid + ".svg"), "w", encoding="utf-8") as f:
+            f.write(draw())
 
     ctx = Ctx()
     for path, key, title, desc, fn in PAGES:
@@ -662,7 +745,7 @@ def build_site():
     # Old addresses from the previous site keep working.
     redirects = ["/new-page  /cases/  301", "/new-page/  /cases/  301",
                  "/blog-1-copy-1  /blog/  301", "/blog-1-copy-1/*  /blog/  301"]
-    for p in PRODUCTS:
+    for p in [p for p in PRODUCTS if "old" in p]:
         redirects += [f'/shop/p/{p["old"]}  {p["url"]}  301', f'/shop/p/{p["old"]}/  {p["url"]}  301']
     with open(os.path.join(SITE, "_redirects"), "w") as f:
         f.write("\n".join(redirects) + "\n")
@@ -713,7 +796,7 @@ def build_single():
   </main>
   {footer(ctx)}
   <script>
-{data_js()}
+{data_js(ctx)}
 {js}
   </script>
 </body>
